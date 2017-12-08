@@ -23,19 +23,29 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
+
 /**
  *
  * @author LuedeckeA
  */
 public class FileIO {
+    // Private members
+    private final Config config = new Config();
+    
+    // Getters
 
+    public Config getConfig() {
+        return config;
+    }
+    
+    
+    // Public methods
     public String openFile(String file_name) throws FileNotFoundException, IOException {
         boolean first_line = true;
         FileInputStream in = new FileInputStream(file_name);
@@ -78,21 +88,31 @@ public class FileIO {
     }
     
     public void uploadFile(String file_name) {
-        String server = "www.kleinhunde-berlin.com";//"home20267776.1and1-data.host";
-        int port = 21;
-        String user = "ftp_andreas@kleinhunde-berlin.com";//"p7012671-thomas";
-        String pass = "Alien!001";//"Thomas!002";
-        String up_name =  file_name.substring(file_name.lastIndexOf("\\") + 1);
+        boolean complete = false;
+        int port = Integer.parseInt(config.getFtp_port());
         FTPClient ftpClient = new FTPClient();
+        String server = config.getFpt_server(); //"www.kleinhunde-berlin.com";
+        String user = config.getFtp_user(); //"ftp_andreas@kleinhunde-berlin.com";
+        String pass =  config.getFtp_password(); //"Alien!001";
+        String up_name =  file_name.substring(file_name.lastIndexOf("\\") + 1);
         
         try {
             ftpClient.connect(server, port);
             ftpClient.login(user, pass);
             ftpClient.enterLocalPassiveMode();
             ftpClient.setFileType(FTP.ASCII_FILE_TYPE);
+            ftpClient.setFileTransferMode(FTP.ASCII_FILE_TYPE);
+
+            FileInputStream uploadFile = new FileInputStream(file_name);
             
-            InputStream uploadFile = new FileInputStream(file_name);
-            boolean done = ftpClient.storeFile(up_name, uploadFile);
+            if (ftpClient.isConnected()) {
+                complete = ftpClient.storeFile(up_name, uploadFile);
+            }
+            
+            if (complete) {
+                System.out.print("Upload complete.");
+                uploadFile.close();
+            }
         } catch (IOException ex) {
             Logger.getLogger(FileIO.class.getName()).log(Level.SEVERE, null, ex);
         } finally {

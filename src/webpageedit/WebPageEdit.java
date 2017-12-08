@@ -163,12 +163,12 @@ public class WebPageEdit extends Application {
 
         lblUpload.setLayoutX(160);
         lblUpload.setLayoutY(733);
-        lblUpload.setText("to: p7012671-thomas@home20267776.1and1-data.host:22");
+        lblUpload.setText("to: " + htmlFile.getConfig().getFtp_user() + "@" + htmlFile.getConfig().getFpt_server());
 
         txtFile.setLayoutX(80);
         txtFile.setLayoutY(10);
         txtFile.setPrefWidth(425);
-        txtFile.setText("C:\\wamp64\\www\\dr-pfannschmidt.de\\aktuelles.html");
+        txtFile.setText(htmlFile.getConfig().getDefault_path());
         
         html.setLayoutX(10);
         html.setLayoutY(50);
