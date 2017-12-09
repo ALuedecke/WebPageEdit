@@ -23,12 +23,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
+import javafx.geometry.Insets;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.InputEvent;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.paint.Color;
 import javafx.scene.web.HTMLEditor;
 import javafx.stage.Stage;
@@ -45,6 +49,7 @@ public class WebPageEdit extends Application {
     private final Button     btnUpload = new Button();
     private final Button     btnSave = new Button();
     private final Label      lblFile = new Label();
+    private final Label      lblOut = new Label();
     private final Label      lblUpload = new Label();
     private final TextField  txtFile = new TextField();
     private final HTMLEditor html = new HTMLEditor();
@@ -147,6 +152,7 @@ public class WebPageEdit extends Application {
         btnSave.setOnAction((ActionEvent event) -> {
             htmlFile.saveFile(txtFile.getText(), html.getHtmlText());
             btnUpload.setDisable(false);
+            lblOut.setText("");
         });
 
         btnUpload.setLayoutX(90);
@@ -154,20 +160,36 @@ public class WebPageEdit extends Application {
         btnUpload.setText("Upload");
         btnUpload.setDisable(true);
         btnUpload.setOnAction((ActionEvent event) -> {
-            htmlFile.uploadFile(txtFile.getText());
+            if (
+                    htmlFile.getConfig().getFtp_port().equals("22") ||
+                    htmlFile.getConfig().getFtp_protocol().equals("SFTP")
+                    ) {
+                htmlFile.uploadFileSFTP(txtFile.getText());
+            } else {
+                htmlFile.uploadFileFTP(txtFile.getText());
+            }
+            lblOut.setText("   ... Upload complete.");
         });
 
         lblFile.setLayoutX(10);
         lblFile.setLayoutY(13);
         lblFile.setText("Lokale Datei:");
-
+        
+        lblOut.setBackground(new Background(new BackgroundFill(Color.BLACK, CornerRadii.EMPTY, Insets.EMPTY)));
+        lblOut.setLayoutX(515);
+        lblOut.setLayoutY(733);
+        lblOut.setPrefWidth(650);
+        lblOut.setTextFill(Color.GREEN);
+        
+        lblUpload.setBackground(new Background(new BackgroundFill(Color.BLACK, CornerRadii.EMPTY, Insets.EMPTY)));
         lblUpload.setLayoutX(160);
         lblUpload.setLayoutY(733);
         lblUpload.setText(
-            "to: " + htmlFile.getConfig().getFtp_user() +
+            "     to: " + htmlFile.getConfig().getFtp_user() +
             "@" + htmlFile.getConfig().getFpt_server() + 
-            ":" + htmlFile.getConfig().getFtp_port()
+            ":" + htmlFile.getConfig().getFtp_port() + "     "
         );
+        lblUpload.setTextFill(Color.GREEN);
 
         txtFile.setLayoutX(80);
         txtFile.setLayoutY(10);
@@ -194,6 +216,7 @@ public class WebPageEdit extends Application {
         root.getChildren().add(btnSave);
         root.getChildren().add(btnUpload);
         root.getChildren().add(lblUpload);
+        root.getChildren().add(lblOut);
         root.getChildren().add(btnClose);
         
     }

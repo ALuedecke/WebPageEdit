@@ -16,6 +16,7 @@
  */
 package webpageedit;
 
+import com.jcraft.jsch.*;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -25,8 +26,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.scene.control.Label;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 
@@ -37,6 +40,7 @@ import org.apache.commons.net.ftp.FTPClient;
 public class FileIO {
     // Private members
     private final Config config = new Config();
+    private Label output = new Label();
     
     // Getters
 
@@ -44,7 +48,12 @@ public class FileIO {
         return config;
     }
     
+    // Setters
     
+    public void setOutput(Label output) {    
+        this.output = output;
+    }
+
     // Public methods
     public String openFile(String file_name) throws FileNotFoundException, IOException {
         boolean first_line = true;
@@ -65,11 +74,12 @@ public class FileIO {
         return out.toString();
     }
 
-    public void saveFile(String file_name, String text) {
+    public void saveFile(String file_name, String content) {
         BufferedWriter writer;
         File target;
         FileOutputStream out;
-
+        String text = content.replaceAll(" contenteditable=\"true\"", "");
+        
         try {
             target = new File(file_name);
             out = new FileOutputStream(target);
@@ -87,7 +97,7 @@ public class FileIO {
         }
     }
     
-    public void uploadFile(String file_name) {
+    public void uploadFileFTP(String file_name) {
         boolean complete = false;
         int port = Integer.parseInt(config.getFtp_port());
         FTPClient ftpClient = new FTPClient();
@@ -96,6 +106,7 @@ public class FileIO {
         String pass =  config.getFtp_password(); //"Alien!001";
         String up_name =  file_name.substring(file_name.lastIndexOf("\\") + 1);
         
+      
         try {
             ftpClient.connect(server, port);
             ftpClient.login(user, pass);
@@ -111,6 +122,7 @@ public class FileIO {
             
             if (complete) {
                 System.out.print("Upload complete.");
+                output.setText("Upload complete.");
                 uploadFile.close();
             }
         } catch (IOException ex) {
@@ -124,7 +136,42 @@ public class FileIO {
             } catch (IOException ex) {
                 Logger.getLogger(FileIO.class.getName()).log(Level.SEVERE, null, ex);
             }
-        }
+        }        
+    }
+    
+    public void uploadFileSFTP(String file_name) {
+        int port = Integer.parseInt(config.getFtp_port());
+        JSch jsch = new JSch();
+        String server = config.getFpt_server();
+        String user = config.getFtp_user();
+        String pass =  config.getFtp_password();
+        String up_name =  file_name.substring(file_name.lastIndexOf("\\") + 1);
         
+        try {
+            Properties prop = new Properties();
+            prop.put("StrictHostKeyChecking", "no");
+
+            Session session = jsch.getSession(user, server, port);
+            session.setPassword(pass);
+            session.setConfig(prop);
+            session.connect();
+            
+            Channel channel = session.openChannel("sftp");
+            channel.connect();
+            ChannelSftp channelSftp = (ChannelSftp) channel;
+            
+            FileInputStream uploadFile = new FileInputStream(file_name);
+            channelSftp.put(uploadFile, up_name, ChannelSftp.OVERWRITE);
+            output.setText("Upload complete.");
+
+            channelSftp.exit();
+            session.disconnect();
+        } catch (JSchException ex) {
+            Logger.getLogger(FileIO.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(FileIO.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SftpException ex) {
+            Logger.getLogger(FileIO.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }
