@@ -54,7 +54,7 @@ public class WebPageEdit extends Application {
     private final FileIO htmlFile = new FileIO();
     
     // private methods
-    private String chooseFilePath(int dlg_type, int sel_mode, String ini_path, javax.swing.filechooser.FileFilter filter) {
+    private String chooseFilePath(int dlg_type, int sel_mode, String ini_path, FileFilter filter) {
         String name ="";
         
         final JFileChooser chooser = new JFileChooser(); 
@@ -163,7 +163,11 @@ public class WebPageEdit extends Application {
 
         lblUpload.setLayoutX(160);
         lblUpload.setLayoutY(733);
-        lblUpload.setText("to: " + htmlFile.getConfig().getFtp_user() + "@" + htmlFile.getConfig().getFpt_server());
+        lblUpload.setText(
+            "to: " + htmlFile.getConfig().getFtp_user() +
+            "@" + htmlFile.getConfig().getFpt_server() + 
+            ":" + htmlFile.getConfig().getFtp_port()
+        );
 
         txtFile.setLayoutX(80);
         txtFile.setLayoutY(10);

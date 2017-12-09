@@ -1,9 +1,8 @@
 [
     {
-        "default_path":"C:\\wamp\\www\\dr-pfannschmidt.de\\aktuelles.html",
+        "default_path":"C:\\wamp64\\www\\dr-pfannschmidt.de\\aktuelles.html",
         "fpt_server":"home20267776.1and1-data.host",
         "ftp_port":"22",
-        "ftp_protocol":"SFTP",
         "ftp_user":"p7012671-thomas",
         "ftp_password":"Thomas!002"
     }
