@@ -8,7 +8,7 @@
   </information>
   <resources>
     <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
-    <jar href="WebPageEdit.jar" size="10474" download="eager" />
+    <jar href="WebPageEdit.jar" size="10509" download="eager" />
     <jar href="lib\commons-net-3.6.jar" size="307410" download="eager" />
     <jar href="lib\jsch-0.1.54.jar" size="278612" download="eager" />
     <jar href="lib\json-simple-1.1.1.jar" size="23931" download="eager" />

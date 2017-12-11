@@ -226,7 +226,7 @@ public class WebPageEdit extends Application {
         initGui();
 
         Scene scene = new Scene(root, 1280, 768, Color.LIGHTGREY);
-        primaryStage.setTitle("WebPage Editior");
+        primaryStage.setTitle("WebPage Editor");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
