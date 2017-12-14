@@ -246,7 +246,7 @@ public class WebPageEdit extends Application {
         html.setPrefWidth(1260);
         html.addEventHandler(InputEvent.ANY, (InputEvent event) -> {
             lblOut.textProperty().unbind();
-            //lblOut.setText("");
+            lblOut.setText("");
             btnUpload.setDisable(true);
         });
         
