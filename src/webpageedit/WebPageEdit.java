@@ -49,6 +49,7 @@ import javax.swing.filechooser.FileFilter;
 public class WebPageEdit extends Application {
     // GUI members
     private final Button     btnClose = new Button();
+    private final Button     btnDown = new Button();
     private final Button     btnOpen = new Button();
     private final Button     btnUpload = new Button();
     private final Button     btnSave = new Button();
@@ -103,11 +104,16 @@ public class WebPageEdit extends Application {
         return name;
     }
 
+    private void handleBtnDown() {
+        // to do
+        lblOut.setText(" ... Clicked on [Download from Server]");
+    }
+    
     private void handleBtnOpen() {
         final String ini_path; 
         final String name;
 
-        ini_path = this.txtFile.getText();
+        ini_path = txtFile.getText();
 
         name = chooseFilePath(
                    JFileChooser.OPEN_DIALOG
@@ -153,6 +159,21 @@ public class WebPageEdit extends Application {
     }
     
     private void handleBtnUpload() {
+        String msg;
+        if (htmlFile.getConfig().getFtp_port().equals("22") || htmlFile.getConfig().getFtp_protocol().equals("SFTP")) {
+            msg = htmlFile.uploadFileSFTP(txtFile.getText());
+        } else {
+            msg = htmlFile.uploadFileFTP(txtFile.getText());
+        }
+        
+        if (htmlFile.getError_msg().equals("")) {
+            lblOut.setTextFill(Color.LAWNGREEN);
+        } else {
+            lblOut.setTextFill(Color.RED);
+        }
+        lblOut.setText(msg);
+        
+        /*
         Task task = new Task() {
             @Override
             protected String call() throws Exception {
@@ -182,6 +203,7 @@ public class WebPageEdit extends Application {
                 lblOut.setTextFill(Color.RED);
             }
         }
+        */
     }
     
     private void initGui() {
@@ -190,6 +212,13 @@ public class WebPageEdit extends Application {
         btnClose.setText("Beenden");
         btnClose.setOnAction((ActionEvent event) -> {
             System.exit(0);
+        });
+
+        btnDown.setLayoutX(545);
+        btnDown.setLayoutY(10);
+        btnDown.setText(" Download from Server");
+        btnDown.setOnAction((ActionEvent event) -> {
+            handleBtnDown();
         });
 
         btnOpen.setLayoutX(515);
@@ -260,6 +289,7 @@ public class WebPageEdit extends Application {
         root.getChildren().add(lblFile);
         root.getChildren().add(txtFile);
         root.getChildren().add(btnOpen);
+        root.getChildren().add(btnDown);
         root.getChildren().add(btnSave);
         root.getChildren().add(btnUpload);
         root.getChildren().add(lblUpload);
@@ -272,6 +302,8 @@ public class WebPageEdit extends Application {
         initGui();
 
         scene = new Scene(root, 1280, 768, Color.LIGHTGREY);
+        htmlFile.setScene(scene);
+        
         primaryStage.setTitle("WebPage Editor");
         primaryStage.setScene(scene);
         primaryStage.show();

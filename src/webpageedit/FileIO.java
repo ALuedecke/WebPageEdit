@@ -29,6 +29,8 @@ import java.io.OutputStreamWriter;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.scene.Cursor;
+import javafx.scene.Scene;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 
@@ -42,9 +44,9 @@ public class FileIO {
     
     private final  Config config = new Config();
     private static String error_msg = "";
+    private Scene scene;
     
-    // Getters
-
+    // Getters / Setters
     public static String getCOMPLETE_MSG() {
         return COMPLETE_MSG;
     }
@@ -55,6 +57,10 @@ public class FileIO {
 
     public String getError_msg() {
         return error_msg;
+    }
+
+    public void setScene(Scene scene) {
+        this.scene = scene;
     }
 
 
@@ -106,6 +112,11 @@ public class FileIO {
         String up_name = file_name.substring(file_name.lastIndexOf("\\") + 1);
       
         error_msg = "";
+
+        if (scene != null) {
+            scene.setCursor(Cursor.WAIT);
+        }
+
         try {
             ftpClient.connect(server, port);
             ftpClient.login(user, pass);
@@ -143,6 +154,10 @@ public class FileIO {
             }
         }
         
+        if (scene != null) {
+            scene.setCursor(Cursor.DEFAULT);
+        }
+
         return out_msg;
     }
     
@@ -152,10 +167,15 @@ public class FileIO {
         String out_msg = COMPLETE_MSG;
         String server  = config.getFpt_server();
         String user    = config.getFtp_user();
-        String pass    =  config.getFtp_password();
-        String up_name =  file_name.substring(file_name.lastIndexOf("\\") + 1);
+        String pass    = config.getFtp_password();
+        String up_name = file_name.substring(file_name.lastIndexOf("\\") + 1);
 
         error_msg = "";
+        
+        if (scene != null) {
+            scene.setCursor(Cursor.WAIT);
+        }
+        
         try {
             Properties prop = new Properties();
             prop.put("StrictHostKeyChecking", "no");
@@ -178,6 +198,10 @@ public class FileIO {
             out_msg = "  ... " + ex.getMessage();
             error_msg = out_msg;
             Logger.getLogger(FileIO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        if (scene != null) {
+            scene.setCursor(Cursor.DEFAULT);
         }
         
         return out_msg;
