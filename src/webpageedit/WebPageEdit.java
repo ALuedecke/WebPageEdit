@@ -22,8 +22,11 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
+import javafx.concurrent.Task;
+import javafx.concurrent.Worker.State;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
+import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -54,6 +57,9 @@ public class WebPageEdit extends Application {
     private final TextField  txtFile = new TextField();
     private final HTMLEditor html = new HTMLEditor();
     private final Group      root = new Group();
+    
+    // Display member
+    private Scene scene;
     
     // IO members
     private final FileIO htmlFile = new FileIO();
@@ -131,6 +137,45 @@ public class WebPageEdit extends Application {
         }
     }
     
+    private void handleBtnSave() {
+        htmlFile.saveFile(txtFile.getText(), html.getHtmlText());
+        btnUpload.setDisable(false);
+        lblOut.textProperty().unbind();
+        lblOut.setText("");
+    }
+    
+    private void handleBtnUpload() {
+        Task task = new Task() {
+            @Override
+            protected String call() throws Exception {
+                String msg;
+                
+                scene.setCursor(Cursor.WAIT); //Change cursor to wait style
+                if (htmlFile.getConfig().getFtp_port().equals("22") || htmlFile.getConfig().getFtp_protocol().equals("SFTP")) {
+                    msg = htmlFile.uploadFileSFTP(txtFile.getText());
+                } else {
+                    msg = htmlFile.uploadFileFTP(txtFile.getText());
+                }
+                updateMessage(msg);
+                scene.setCursor(Cursor.DEFAULT); //Change cursor to default style
+                return msg;
+            }
+        };
+        lblOut.textProperty().bind(task.messageProperty());
+        new Thread(task).start();
+        
+        while (task.getState() == State.RUNNING) {
+            //do nothing
+        }
+        if (task.getState() != State.RUNNING) {
+            if (htmlFile.getError_msg().equals("")) {
+                lblOut.setTextFill(Color.GREEN);
+            } else {
+                lblOut.setTextFill(Color.RED);
+            }
+        }
+    }
+    
     private void initGui() {
         btnClose.setLayoutX(1210);
         btnClose.setLayoutY(730);
@@ -150,9 +195,7 @@ public class WebPageEdit extends Application {
         btnSave.setLayoutY(730);
         btnSave.setText("Speichern");
         btnSave.setOnAction((ActionEvent event) -> {
-            htmlFile.saveFile(txtFile.getText(), html.getHtmlText());
-            btnUpload.setDisable(false);
-            lblOut.setText("");
+            handleBtnSave();
         });
 
         btnUpload.setLayoutX(90);
@@ -160,15 +203,7 @@ public class WebPageEdit extends Application {
         btnUpload.setText("Upload");
         btnUpload.setDisable(true);
         btnUpload.setOnAction((ActionEvent event) -> {
-            if (
-                    htmlFile.getConfig().getFtp_port().equals("22") ||
-                    htmlFile.getConfig().getFtp_protocol().equals("SFTP")
-                    ) {
-                htmlFile.uploadFileSFTP(txtFile.getText());
-            } else {
-                htmlFile.uploadFileFTP(txtFile.getText());
-            }
-            lblOut.setText("   ... Upload complete.");
+            handleBtnUpload();
         });
 
         lblFile.setLayoutX(10);
@@ -176,20 +211,22 @@ public class WebPageEdit extends Application {
         lblFile.setText("Lokale Datei:");
         
         lblOut.setBackground(new Background(new BackgroundFill(Color.BLACK, CornerRadii.EMPTY, Insets.EMPTY)));
-        lblOut.setLayoutX(515);
+        lblOut.setLayoutX(565);
         lblOut.setLayoutY(733);
-        lblOut.setPrefWidth(650);
+        lblOut.setPrefWidth(635);
         lblOut.setTextFill(Color.GREEN);
         
         lblUpload.setBackground(new Background(new BackgroundFill(Color.BLACK, CornerRadii.EMPTY, Insets.EMPTY)));
-        lblUpload.setLayoutX(160);
+        lblUpload.setLayoutX(155);
         lblUpload.setLayoutY(733);
+        lblUpload.setPrefWidth(400);
         lblUpload.setText(
-            "     to: " + htmlFile.getConfig().getFtp_user() +
+            htmlFile.getConfig().getFtp_protocol() +
+            "://" +  htmlFile.getConfig().getFtp_user() +
             "@" + htmlFile.getConfig().getFpt_server() + 
-            ":" + htmlFile.getConfig().getFtp_port() + "     "
+            ":" + htmlFile.getConfig().getFtp_port()
         );
-        lblUpload.setTextFill(Color.GREEN);
+        lblUpload.setTextFill(Color.WHITE);
 
         txtFile.setLayoutX(80);
         txtFile.setLayoutY(10);
@@ -200,6 +237,8 @@ public class WebPageEdit extends Application {
         html.setLayoutY(50);
         html.setPrefWidth(1260);
         html.addEventHandler(InputEvent.ANY, (InputEvent event) -> {
+            lblOut.textProperty().unbind();
+            lblOut.setText("");
             btnUpload.setDisable(true);
         });
         
@@ -218,14 +257,13 @@ public class WebPageEdit extends Application {
         root.getChildren().add(lblUpload);
         root.getChildren().add(lblOut);
         root.getChildren().add(btnClose);
-        
     }
     
     @Override
     public void start(Stage primaryStage) {
         initGui();
 
-        Scene scene = new Scene(root, 1280, 768, Color.LIGHTGREY);
+        scene = new Scene(root, 1280, 768, Color.LIGHTGREY);
         primaryStage.setTitle("WebPage Editor");
         primaryStage.setScene(scene);
         primaryStage.show();

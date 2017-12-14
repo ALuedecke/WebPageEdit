@@ -102,9 +102,7 @@ public class Config {
             fpt_server   = (String)  config.get("fpt_server");
             ftp_user     = (String)  config.get("ftp_user");
             ftp_password = (String)  config.get("ftp_password");
-        } catch (IOException ex) {
-            Logger.getLogger(Config.class.getName()).log(Level.INFO, "no Config file");
-        } catch (ParseException ex) {
+        } catch (IOException | ParseException ex) {
             Logger.getLogger(Config.class.getName()).log(Level.SEVERE, null, ex);
         }      
     }
