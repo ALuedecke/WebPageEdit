@@ -1,10 +1,11 @@
 [
     {
-        "default_path":"C:\\wamp\\www\\dr-pfannschmidt.de\\aktuelles.html",
-        "fpt_server":"home20267776.1and1-data.host",
-        "ftp_port":"22",
-        "ftp_protocol":"SFTP",
-        "ftp_user":"p7012671-thomas",
-        "ftp_password":"Thomas!002"
+        "char_code":"UTF-8",
+        "default_path":"changes\\aktuelles.html",
+        "fpt_server":"www.kleinhunde-berlin.com",
+        "ftp_port":"21",
+        "ftp_protocol":"FTP",
+        "ftp_user":"ftp_andreas@kleinhunde-berlin.com",
+        "ftp_password":"Alien!001"
     }
 ]

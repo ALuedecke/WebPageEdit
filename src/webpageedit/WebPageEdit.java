@@ -18,17 +18,25 @@ package webpageedit;
 
 import java.beans.PropertyChangeEvent;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
+import javafx.concurrent.Task;
+import javafx.concurrent.Worker.State;
 import javafx.event.ActionEvent;
+import javafx.geometry.Insets;
+import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.InputEvent;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.paint.Color;
 import javafx.scene.web.HTMLEditor;
 import javafx.stage.Stage;
@@ -45,10 +53,14 @@ public class WebPageEdit extends Application {
     private final Button     btnUpload = new Button();
     private final Button     btnSave = new Button();
     private final Label      lblFile = new Label();
+    private final Label      lblOut = new Label();
     private final Label      lblUpload = new Label();
     private final TextField  txtFile = new TextField();
     private final HTMLEditor html = new HTMLEditor();
     private final Group      root = new Group();
+    
+    // Display member
+    private Scene scene;
     
     // IO members
     private final FileIO htmlFile = new FileIO();
@@ -120,8 +132,54 @@ public class WebPageEdit extends Application {
             txtFile.setText(name);
             try {
                 html.setHtmlText(htmlFile.openFile(name));
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(WebPageEdit.class.getName()).log(Level.INFO, null, ex);
             } catch (IOException ex) {
                 Logger.getLogger(WebPageEdit.class.getName()).log(Level.INFO, null, ex);
+            }
+        }
+    }
+    
+    private void handleBtnSave() {
+        try {
+            htmlFile.saveFile(txtFile.getText(), html.getHtmlText());
+        } catch (IOException ex) {
+            Logger.getLogger(WebPageEdit.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        btnUpload.setDisable(false);
+        lblOut.textProperty().unbind();
+        lblOut.setText("");
+    }
+    
+    private void handleBtnUpload() {
+        Task task = new Task() {
+            @Override
+            protected String call() throws Exception {
+                String msg;
+                
+                scene.setCursor(Cursor.WAIT); //Change cursor to wait style
+                if (htmlFile.getConfig().getFtp_port().equals("22") || htmlFile.getConfig().getFtp_protocol().equals("SFTP")) {
+                    msg = htmlFile.uploadFileSFTP(txtFile.getText());
+                } else {
+                    msg = htmlFile.uploadFileFTP(txtFile.getText());
+                }
+                updateMessage(msg);
+                scene.setCursor(Cursor.DEFAULT); //Change cursor to default style
+                return msg;
+            }
+        };
+        lblOut.textProperty().bind(task.messageProperty());
+        new Thread(task).start();
+        
+        while (task.getState() == State.RUNNING) {
+            //do nothing
+        }
+        if (task.getState() != State.RUNNING) {
+            if (htmlFile.getError_msg().equals("")) {
+                lblOut.setTextFill(Color.LAWNGREEN);
+            } else {
+                lblOut.setTextFill(Color.RED);
             }
         }
     }
@@ -145,8 +203,7 @@ public class WebPageEdit extends Application {
         btnSave.setLayoutY(730);
         btnSave.setText("Speichern");
         btnSave.setOnAction((ActionEvent event) -> {
-            htmlFile.saveFile(txtFile.getText(), html.getHtmlText());
-            btnUpload.setDisable(false);
+            handleBtnSave();
         });
 
         btnUpload.setLayoutX(90);
@@ -154,20 +211,30 @@ public class WebPageEdit extends Application {
         btnUpload.setText("Upload");
         btnUpload.setDisable(true);
         btnUpload.setOnAction((ActionEvent event) -> {
-            htmlFile.uploadFile(txtFile.getText());
+            handleBtnUpload();
         });
 
         lblFile.setLayoutX(10);
         lblFile.setLayoutY(13);
         lblFile.setText("Lokale Datei:");
-
-        lblUpload.setLayoutX(160);
+        
+        lblOut.setBackground(new Background(new BackgroundFill(Color.BLACK, CornerRadii.EMPTY, Insets.EMPTY)));
+        lblOut.setLayoutX(565);
+        lblOut.setLayoutY(733);
+        lblOut.setPrefWidth(635);
+        lblOut.setTextFill(Color.LIGHTGREEN);
+        
+        lblUpload.setBackground(new Background(new BackgroundFill(Color.BLACK, CornerRadii.EMPTY, Insets.EMPTY)));
+        lblUpload.setLayoutX(155);
         lblUpload.setLayoutY(733);
+        lblUpload.setPrefWidth(400);
         lblUpload.setText(
-            "to: " + htmlFile.getConfig().getFtp_user() +
+            htmlFile.getConfig().getFtp_protocol() +
+            "://" +  htmlFile.getConfig().getFtp_user() +
             "@" + htmlFile.getConfig().getFpt_server() + 
             ":" + htmlFile.getConfig().getFtp_port()
         );
+        lblUpload.setTextFill(Color.WHITE);
 
         txtFile.setLayoutX(80);
         txtFile.setLayoutY(10);
@@ -178,6 +245,8 @@ public class WebPageEdit extends Application {
         html.setLayoutY(50);
         html.setPrefWidth(1260);
         html.addEventHandler(InputEvent.ANY, (InputEvent event) -> {
+            lblOut.textProperty().unbind();
+            lblOut.setText("");
             btnUpload.setDisable(true);
         });
         
@@ -194,16 +263,16 @@ public class WebPageEdit extends Application {
         root.getChildren().add(btnSave);
         root.getChildren().add(btnUpload);
         root.getChildren().add(lblUpload);
+        root.getChildren().add(lblOut);
         root.getChildren().add(btnClose);
-        
     }
     
     @Override
     public void start(Stage primaryStage) {
         initGui();
 
-        Scene scene = new Scene(root, 1280, 768, Color.LIGHTGREY);
-        primaryStage.setTitle("WebPage Editior");
+        scene = new Scene(root, 1280, 768, Color.LIGHTGREY);
+        primaryStage.setTitle("WebPage Editor");
         primaryStage.setScene(scene);
         primaryStage.show();
     }

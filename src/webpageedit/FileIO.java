@@ -16,6 +16,7 @@
  */
 package webpageedit;
 
+import com.jcraft.jsch.*;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -25,6 +26,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.net.ftp.FTP;
@@ -36,20 +38,32 @@ import org.apache.commons.net.ftp.FTPClient;
  */
 public class FileIO {
     // Private members
-    private final Config config = new Config();
+    private static final String COMPLETE_MSG = "   ... Upload complete.";
+    
+    private final  Config config = new Config();
+    private static String error_msg = "";
     
     // Getters
 
+    public static String getCOMPLETE_MSG() {
+        return COMPLETE_MSG;
+    }
+    
     public Config getConfig() {
         return config;
     }
-    
-    
+
+    public String getError_msg() {
+        return error_msg;
+    }
+
+
     // Public methods
+
     public String openFile(String file_name) throws FileNotFoundException, IOException {
         boolean first_line = true;
         FileInputStream in = new FileInputStream(file_name);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in, config.getChar_code()));
         StringBuilder out = new StringBuilder();
         String line;
 
@@ -65,55 +79,52 @@ public class FileIO {
         return out.toString();
     }
 
-    public void saveFile(String file_name, String text) {
+    public void saveFile(String file_name, String content) throws IOException{
         BufferedWriter writer;
         File target;
         FileOutputStream out;
+        String text = content.replaceAll(" contenteditable=\"true\"", "");
+        
+        target = new File(file_name);
+        out = new FileOutputStream(target);
+        writer = new BufferedWriter(new OutputStreamWriter(out, config.getChar_code()));
 
-        try {
-            target = new File(file_name);
-            out = new FileOutputStream(target);
-            writer = new BufferedWriter(new OutputStreamWriter(out));
-
-            writer.write(text);
-            writer.flush();
-            writer.close();
-            out.flush();
-            out.close();
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(FileIO.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(FileIO.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        writer.write(text);
+        writer.flush();
+        writer.close();
+        out.flush();
+        out.close();
     }
     
-    public void uploadFile(String file_name) {
-        boolean complete = false;
+    public String uploadFileFTP(String file_name) {
         int port = Integer.parseInt(config.getFtp_port());
         FTPClient ftpClient = new FTPClient();
-        String server = config.getFpt_server(); //"www.kleinhunde-berlin.com";
-        String user = config.getFtp_user(); //"ftp_andreas@kleinhunde-berlin.com";
-        String pass =  config.getFtp_password(); //"Alien!001";
-        String up_name =  file_name.substring(file_name.lastIndexOf("\\") + 1);
-        
+        String out_msg = "";
+        String server  = config.getFpt_server(); //"www.kleinhunde-berlin.com";
+        String user    = config.getFtp_user(); //"ftp_andreas@kleinhunde-berlin.com";
+        String pass    = config.getFtp_password(); //"Alien!001";
+        String up_name = file_name.substring(file_name.lastIndexOf("\\") + 1);
+      
+        error_msg = "";
         try {
             ftpClient.connect(server, port);
             ftpClient.login(user, pass);
             ftpClient.enterLocalPassiveMode();
             ftpClient.setFileType(FTP.ASCII_FILE_TYPE);
             ftpClient.setFileTransferMode(FTP.ASCII_FILE_TYPE);
-
-            FileInputStream uploadFile = new FileInputStream(file_name);
             
             if (ftpClient.isConnected()) {
-                complete = ftpClient.storeFile(up_name, uploadFile);
-            }
-            
-            if (complete) {
-                System.out.print("Upload complete.");
-                uploadFile.close();
+                FileInputStream uploadFile = new FileInputStream(file_name);
+                boolean complete = ftpClient.storeFile(up_name, uploadFile);
+                
+                if (complete) {
+                    out_msg = COMPLETE_MSG;
+                    uploadFile.close();
+                }
             }
         } catch (IOException ex) {
+            out_msg = "  ... " + ex.getMessage();
+            error_msg = out_msg;
             Logger.getLogger(FileIO.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
@@ -122,9 +133,53 @@ public class FileIO {
                     ftpClient.disconnect();
                 }
             } catch (IOException ex) {
+                if (!out_msg.equals(COMPLETE_MSG)) {
+                    out_msg = "  ... " + ex.getMessage();
+                    error_msg = out_msg;
+                } else {
+                    error_msg = "  ... " + ex.getMessage();
+                }
                 Logger.getLogger(FileIO.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         
+        return out_msg;
+    }
+    
+    public String uploadFileSFTP(String file_name) {
+        int port  = Integer.parseInt(config.getFtp_port());
+        JSch jsch = new JSch();
+        String out_msg = COMPLETE_MSG;
+        String server  = config.getFpt_server();
+        String user    = config.getFtp_user();
+        String pass    =  config.getFtp_password();
+        String up_name =  file_name.substring(file_name.lastIndexOf("\\") + 1);
+
+        error_msg = "";
+        try {
+            Properties prop = new Properties();
+            prop.put("StrictHostKeyChecking", "no");
+
+            Session session = jsch.getSession(user, server, port);
+            session.setPassword(pass);
+            session.setConfig(prop);
+            session.connect();
+            
+            Channel channel = session.openChannel("sftp");
+            channel.connect();
+            ChannelSftp channelSftp = (ChannelSftp) channel;
+            
+            FileInputStream uploadFile = new FileInputStream(file_name);
+            channelSftp.put(uploadFile, up_name, ChannelSftp.OVERWRITE);
+
+            channelSftp.exit();
+            session.disconnect();
+        } catch (JSchException | FileNotFoundException | SftpException ex) {
+            out_msg = "  ... " + ex.getMessage();
+            error_msg = out_msg;
+            Logger.getLogger(FileIO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return out_msg;
     }
 }
