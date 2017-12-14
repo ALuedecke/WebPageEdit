@@ -59,10 +59,11 @@ public class FileIO {
 
 
     // Public methods
+
     public String openFile(String file_name) throws FileNotFoundException, IOException {
         boolean first_line = true;
         FileInputStream in = new FileInputStream(file_name);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in, config.getChar_code()));
         StringBuilder out = new StringBuilder();
         String line;
 
@@ -78,27 +79,21 @@ public class FileIO {
         return out.toString();
     }
 
-    public void saveFile(String file_name, String content) {
+    public void saveFile(String file_name, String content) throws IOException{
         BufferedWriter writer;
         File target;
         FileOutputStream out;
         String text = content.replaceAll(" contenteditable=\"true\"", "");
         
-        try {
-            target = new File(file_name);
-            out = new FileOutputStream(target);
-            writer = new BufferedWriter(new OutputStreamWriter(out));
+        target = new File(file_name);
+        out = new FileOutputStream(target);
+        writer = new BufferedWriter(new OutputStreamWriter(out, config.getChar_code()));
 
-            writer.write(text);
-            writer.flush();
-            writer.close();
-            out.flush();
-            out.close();
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(FileIO.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(FileIO.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        writer.write(text);
+        writer.flush();
+        writer.close();
+        out.flush();
+        out.close();
     }
     
     public String uploadFileFTP(String file_name) {

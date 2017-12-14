@@ -1,6 +1,7 @@
 [
     {
-        "default_path":"C:\\wamp\\www\\dr-pfannschmidt.de\\aktuelles.html",
+        "char_code":"UTF-8",
+        "default_path":"changes\\aktuelles.html",
         "fpt_server":"home20267776.1and1-data.host",
         "ftp_port":"22",
         "ftp_protocol":"SFTP",

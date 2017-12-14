@@ -1,6 +1,7 @@
 [
     {
-        "default_path":"C:\\wamp64\\www\\dr-pfannschmidt.de\\aktuelles.html",
+        "char_code":"UTF-8",
+        "default_path":"changes\\aktuelles.html",
         "fpt_server":"www.kleinhunde-berlin.com",
         "ftp_port":"21",
         "ftp_protocol":"FTP",

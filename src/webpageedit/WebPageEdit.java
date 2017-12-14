@@ -18,6 +18,7 @@ package webpageedit;
 
 import java.beans.PropertyChangeEvent;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -131,6 +132,8 @@ public class WebPageEdit extends Application {
             txtFile.setText(name);
             try {
                 html.setHtmlText(htmlFile.openFile(name));
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(WebPageEdit.class.getName()).log(Level.INFO, null, ex);
             } catch (IOException ex) {
                 Logger.getLogger(WebPageEdit.class.getName()).log(Level.INFO, null, ex);
             }
@@ -138,7 +141,12 @@ public class WebPageEdit extends Application {
     }
     
     private void handleBtnSave() {
-        htmlFile.saveFile(txtFile.getText(), html.getHtmlText());
+        try {
+            htmlFile.saveFile(txtFile.getText(), html.getHtmlText());
+        } catch (IOException ex) {
+            Logger.getLogger(WebPageEdit.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
         btnUpload.setDisable(false);
         lblOut.textProperty().unbind();
         lblOut.setText("");
@@ -169,7 +177,7 @@ public class WebPageEdit extends Application {
         }
         if (task.getState() != State.RUNNING) {
             if (htmlFile.getError_msg().equals("")) {
-                lblOut.setTextFill(Color.GREEN);
+                lblOut.setTextFill(Color.LAWNGREEN);
             } else {
                 lblOut.setTextFill(Color.RED);
             }
@@ -214,7 +222,7 @@ public class WebPageEdit extends Application {
         lblOut.setLayoutX(565);
         lblOut.setLayoutY(733);
         lblOut.setPrefWidth(635);
-        lblOut.setTextFill(Color.GREEN);
+        lblOut.setTextFill(Color.LIGHTGREEN);
         
         lblUpload.setBackground(new Background(new BackgroundFill(Color.BLACK, CornerRadii.EMPTY, Insets.EMPTY)));
         lblUpload.setLayoutX(155);
@@ -238,7 +246,7 @@ public class WebPageEdit extends Application {
         html.setPrefWidth(1260);
         html.addEventHandler(InputEvent.ANY, (InputEvent event) -> {
             lblOut.textProperty().unbind();
-            lblOut.setText("");
+            //lblOut.setText("");
             btnUpload.setDisable(true);
         });
         
