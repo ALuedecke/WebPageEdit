@@ -49,6 +49,7 @@ import javax.swing.filechooser.FileFilter;
 public class WebPageEdit extends Application {
     // GUI members
     private final Button     btnClose = new Button();
+    private final Button     btnDown = new Button();
     private final Button     btnOpen = new Button();
     private final Button     btnUpload = new Button();
     private final Button     btnSave = new Button();
@@ -103,11 +104,43 @@ public class WebPageEdit extends Application {
         return name;
     }
 
+    private void handleBtnDown() {
+        Task task = new Task() {
+            @Override
+            protected String call() throws Exception {
+                String msg;
+                
+                scene.setCursor(Cursor.WAIT); //Change cursor to wait style
+                if (htmlFile.getConfig().getFtp_port().equals("22") || htmlFile.getConfig().getFtp_protocol().equals("SFTP")) {
+                    msg = htmlFile.downloadFileSFTP(txtFile.getText());
+                } else {
+                    msg = htmlFile.downloadFileFTP(txtFile.getText());
+                }
+                updateMessage(msg);
+                scene.setCursor(Cursor.DEFAULT); //Change cursor to default style
+                return msg;
+            }
+        };
+        lblOut.textProperty().bind(task.messageProperty());
+        new Thread(task).start();
+        
+        while (task.isRunning()) {
+            //do nothing
+        }
+        if (task.getState() != State.RUNNING) {
+            if (htmlFile.getError_msg().equals("")) {
+                lblOut.setTextFill(Color.LAWNGREEN);
+            } else {
+                lblOut.setTextFill(Color.RED);
+            }
+        }        
+    }
+    
     private void handleBtnOpen() {
         final String ini_path; 
         final String name;
 
-        ini_path = this.txtFile.getText();
+        ini_path = txtFile.getText();
 
         name = chooseFilePath(
                    JFileChooser.OPEN_DIALOG
@@ -153,7 +186,8 @@ public class WebPageEdit extends Application {
     }
     
     private void handleBtnUpload() {
-        Task task = new Task() {
+        Task task;
+        task = new Task() {
             @Override
             protected String call() throws Exception {
                 String msg;
@@ -172,7 +206,7 @@ public class WebPageEdit extends Application {
         lblOut.textProperty().bind(task.messageProperty());
         new Thread(task).start();
         
-        while (task.getState() == State.RUNNING) {
+        while (task.isRunning()) {
             //do nothing
         }
         if (task.getState() != State.RUNNING) {
@@ -190,6 +224,13 @@ public class WebPageEdit extends Application {
         btnClose.setText("Beenden");
         btnClose.setOnAction((ActionEvent event) -> {
             System.exit(0);
+        });
+
+        btnDown.setLayoutX(545);
+        btnDown.setLayoutY(10);
+        btnDown.setText(" Download from Server");
+        btnDown.setOnAction((ActionEvent event) -> {
+            handleBtnDown();
         });
 
         btnOpen.setLayoutX(515);
@@ -260,6 +301,7 @@ public class WebPageEdit extends Application {
         root.getChildren().add(lblFile);
         root.getChildren().add(txtFile);
         root.getChildren().add(btnOpen);
+        root.getChildren().add(btnDown);
         root.getChildren().add(btnSave);
         root.getChildren().add(btnUpload);
         root.getChildren().add(lblUpload);
@@ -272,6 +314,7 @@ public class WebPageEdit extends Application {
         initGui();
 
         scene = new Scene(root, 1280, 768, Color.LIGHTGREY);
+        
         primaryStage.setTitle("WebPage Editor");
         primaryStage.setScene(scene);
         primaryStage.show();
