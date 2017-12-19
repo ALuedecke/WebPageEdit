@@ -20,6 +20,7 @@ import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
@@ -30,6 +31,7 @@ import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
@@ -103,6 +105,22 @@ public class WebPageEdit extends Application {
         return name;
     }
 
+    private void handleBtnClose() {
+        if (!btnSave.isDisabled()) {
+            Optional<ButtonType> dlg_result;
+            ConfirmDlg dlg = new ConfirmDlg(
+                                     "Änderungen verwerfen",
+                                     "Sollen die Änderungen verworfen werden?"
+                                 );
+            dlg_result = dlg.show();
+            
+            if (dlg_result.get() == dlg.getBtnNo()) {
+                return;
+            }
+        }
+        System.exit(0);
+    }
+    
     private void handleBtnDown() {
         Task task = new Task() {
             @Override
@@ -130,11 +148,21 @@ public class WebPageEdit extends Application {
     }
     
     private void handleBtnOpen() {
+        if (!btnSave.isDisabled()) {
+            Optional<ButtonType> dlg_result;
+            ConfirmDlg dlg = new ConfirmDlg(
+                                     "Änderungen verwerfen",
+                                     "Sollen die Änderungen verworfen werden?"
+                                 );
+            dlg_result = dlg.show();
+            
+            if (dlg_result.get() == dlg.getBtnNo()) {
+                return;
+            }
+        }
         final String ini_path; 
         final String name;
-
         ini_path = txtFile.getText();
-
         name = chooseFilePath(
                    JFileChooser.OPEN_DIALOG
                   ,JFileChooser.FILES_ONLY
@@ -153,7 +181,6 @@ public class WebPageEdit extends Application {
                       }
                    }
                );        
-        
         if(!name.equals("")) {
             txtFile.setText(name);
             try {
@@ -209,7 +236,7 @@ public class WebPageEdit extends Application {
         btnClose.setLayoutY(730);
         btnClose.setText("Beenden");
         btnClose.setOnAction((ActionEvent event) -> {
-            System.exit(0);
+            handleBtnClose();
         });
 
         btnDown.setLayoutX(545);
