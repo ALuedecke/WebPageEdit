@@ -24,7 +24,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
 import javafx.concurrent.Task;
-import javafx.concurrent.Worker.State;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.scene.Cursor;
@@ -33,7 +32,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.input.InputEvent;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
@@ -109,7 +108,7 @@ public class WebPageEdit extends Application {
             @Override
             protected String call() throws Exception {
                 String msg;
-                
+
                 scene.setCursor(Cursor.WAIT); //Change cursor to wait style
                 if (htmlFile.getConfig().getFtp_port().equals("22") || htmlFile.getConfig().getFtp_protocol().equals("SFTP")) {
                     msg = htmlFile.downloadFileSFTP(txtFile.getText());
@@ -117,23 +116,17 @@ public class WebPageEdit extends Application {
                     msg = htmlFile.downloadFileFTP(txtFile.getText());
                 }
                 updateMessage(msg);
+                if (htmlFile.getError_msg().equals("")) {
+                    lblOut.setTextFill(Color.LAWNGREEN);
+                } else {
+                    lblOut.setTextFill(Color.RED);
+                }
                 scene.setCursor(Cursor.DEFAULT); //Change cursor to default style
                 return msg;
             }
         };
         lblOut.textProperty().bind(task.messageProperty());
         new Thread(task).start();
-        
-        while (task.isRunning()) {
-            //do nothing
-        }
-        if (task.getState() != State.RUNNING) {
-            if (htmlFile.getError_msg().equals("")) {
-                lblOut.setTextFill(Color.LAWNGREEN);
-            } else {
-                lblOut.setTextFill(Color.RED);
-            }
-        }        
     }
     
     private void handleBtnOpen() {
@@ -165,6 +158,7 @@ public class WebPageEdit extends Application {
             txtFile.setText(name);
             try {
                 html.setHtmlText(htmlFile.openFile(name));
+                setButtons(false, false, true);
             } catch (FileNotFoundException ex) {
                 Logger.getLogger(WebPageEdit.class.getName()).log(Level.INFO, null, ex);
             } catch (IOException ex) {
@@ -176,13 +170,10 @@ public class WebPageEdit extends Application {
     private void handleBtnSave() {
         try {
             htmlFile.saveFile(txtFile.getText(), html.getHtmlText());
+            setButtons(false, true, true);
         } catch (IOException ex) {
             Logger.getLogger(WebPageEdit.class.getName()).log(Level.SEVERE, null, ex);
         }
-
-        btnUpload.setDisable(false);
-        lblOut.textProperty().unbind();
-        lblOut.setText("");
     }
     
     private void handleBtnUpload() {
@@ -199,23 +190,18 @@ public class WebPageEdit extends Application {
                     msg = htmlFile.uploadFileFTP(txtFile.getText());
                 }
                 updateMessage(msg);
+                if (htmlFile.getError_msg().equals("")) {
+                    lblOut.setTextFill(Color.LAWNGREEN);
+                    setButtons(false, false, false) ;
+                } else {
+                    lblOut.setTextFill(Color.RED);
+                }
                 scene.setCursor(Cursor.DEFAULT); //Change cursor to default style
                 return msg;
             }
         };
         lblOut.textProperty().bind(task.messageProperty());
         new Thread(task).start();
-        
-        while (task.isRunning()) {
-            //do nothing
-        }
-        if (task.getState() != State.RUNNING) {
-            if (htmlFile.getError_msg().equals("")) {
-                lblOut.setTextFill(Color.LAWNGREEN);
-            } else {
-                lblOut.setTextFill(Color.RED);
-            }
-        }
     }
     
     private void initGui() {
@@ -250,7 +236,6 @@ public class WebPageEdit extends Application {
         btnUpload.setLayoutX(90);
         btnUpload.setLayoutY(730);
         btnUpload.setText("Upload");
-        btnUpload.setDisable(true);
         btnUpload.setOnAction((ActionEvent event) -> {
             handleBtnUpload();
         });
@@ -285,10 +270,11 @@ public class WebPageEdit extends Application {
         html.setLayoutX(10);
         html.setLayoutY(50);
         html.setPrefWidth(1260);
-        html.addEventHandler(InputEvent.ANY, (InputEvent event) -> {
-            lblOut.textProperty().unbind();
-            lblOut.setText("");
-            btnUpload.setDisable(true);
+        html.addEventHandler(KeyEvent.KEY_TYPED,  (KeyEvent event) -> {
+            setButtons(true, false, true);
+        });
+        html.addEventHandler(KeyEvent.KEY_PRESSED,  (KeyEvent event) -> {
+            setButtons(true, false, true);
         });
         
         try {
@@ -307,6 +293,17 @@ public class WebPageEdit extends Application {
         root.getChildren().add(lblUpload);
         root.getChildren().add(lblOut);
         root.getChildren().add(btnClose);
+        
+        setButtons(false, false, true);
+    }
+    
+    private void setButtons(boolean save, boolean upload, boolean reset_output) {
+        if (reset_output) {
+            lblOut.textProperty().unbind();
+            lblOut.setText("");
+        }
+        btnSave.setDisable(!save);
+        btnUpload.setDisable(!upload);
     }
     
     @Override
