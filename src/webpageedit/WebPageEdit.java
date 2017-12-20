@@ -158,7 +158,7 @@ public class WebPageEdit extends Application {
         String file_name = txtFile.getText();
         String up_name   = file_name.substring(file_name.lastIndexOf("\\") + 1);
         
-        if (!confirmSvrLoad("Aktuelle Version von  " + up_name + " vom Server holen?")) {
+        if (!confirmSvrLoad("Aktuelle Version \"" + up_name + "\" vom Server holen?")) {
             return;
         } else {
             html.setDisable(true);
@@ -243,7 +243,7 @@ public class WebPageEdit extends Application {
     private void handleBtnUpload() {
         String file_name = txtFile.getText();
         
-        if (!confirmSvrLoad("Änderungen in  " + file_name + " auf den Server hochladen?")) {
+        if (!confirmSvrLoad("Änderungen in  \"" + file_name + "\" auf den Server hochladen?")) {
             return;
         } else {
             html.setDisable(true);
@@ -395,7 +395,7 @@ public class WebPageEdit extends Application {
         
         scene = new Scene(root, 1280, 768, Color.LIGHTGREY);
         
-        primaryStage.setTitle("WebPage Editor");
+        primaryStage.setTitle("WebPage Editor - Version 1.0.1");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
