@@ -41,13 +41,22 @@ import org.apache.commons.net.ftp.FTPClient;
 public class FileIO {
     // Private members
     private static final String DOWN_COMPLETE_MSG = "   ... Download complete.";
+    private static final String NO_FILE_ON_SVR = "   ... No file on Server";
     private static final String UP_COMPLETE_MSG = "   ... Upload complete.";
     
     private final  Config config = new Config();
     private static String error_msg = "";
     
     // Getters / Setters
-    public static String getCOMPLETE_MSG() {
+    public static String getDOWN_COMPLETE_MSG() {
+        return DOWN_COMPLETE_MSG;
+    }
+
+    public static String getNO_FILE_ON_SVR() {
+        return NO_FILE_ON_SVR;
+    }
+
+    public static String getUP_COMPLETE_MSG() {
         return UP_COMPLETE_MSG;
     }
     
@@ -60,6 +69,10 @@ public class FileIO {
     }
 
     // Public methods
+    public boolean deleteFile(String file_name) {
+        File file = new File(file_name);
+        return file.delete();
+    }
 
     public String openFile(String file_name) throws FileNotFoundException, IOException {
         boolean first_line = true;
@@ -76,10 +89,20 @@ public class FileIO {
                 out.append("\n").append(line);
             }
         }
-
+        
+        reader.close();
+        in.close();
+        
         return out.toString();
     }
 
+    public boolean renameFile(String old_name, String new_name) {
+        File old_file = new File(old_name);
+        File new_file = new File(new_name);
+        
+        return old_file.renameTo(new_file);
+    }
+    
     public void saveFile(String file_name, String content) throws IOException{
         BufferedWriter writer;
         File target;
@@ -100,11 +123,13 @@ public class FileIO {
     public String downloadFileFTP(String file_name) {
         int port = Integer.parseInt(config.getFtp_port());
         FTPClient ftpClient = new FTPClient();
-        String out_msg = "";
-        String server  = config.getFpt_server(); //"www.kleinhunde-berlin.com";
-        String user    = config.getFtp_user(); //"ftp_andreas@kleinhunde-berlin.com";
-        String pass    = config.getFtp_password(); //"Alien!001";
-        String up_name = file_name.substring(file_name.lastIndexOf("\\") + 1);
+        String out_msg  = "";
+        String server   = config.getFpt_server();
+        String user     = config.getFtp_user();
+        String pass     = config.getFtp_password();
+        String tmp_name = file_name + ".tmp";
+        String up_name  = file_name.substring(file_name.lastIndexOf("\\") + 1);
+        boolean renamed = renameFile(file_name, tmp_name);
       
         error_msg = "";
 
@@ -120,8 +145,24 @@ public class FileIO {
                 boolean complete = ftpClient.retrieveFile(up_name, downloadFile);
                 
                 if (complete) {
-                    out_msg = DOWN_COMPLETE_MSG;
+                    downloadFile.flush();
                     downloadFile.close();
+                    out_msg = DOWN_COMPLETE_MSG;
+                    if (renamed) {
+                        renamed = !deleteFile(tmp_name);
+                    }
+                } else {
+                    downloadFile.close();
+                    String check = openFile(file_name);
+                    
+                    if (check.equals("")) {
+                        out_msg = NO_FILE_ON_SVR;
+                        error_msg = out_msg;
+                        deleteFile(file_name);
+                        if(renamed) {
+                            renamed = !renameFile(tmp_name, file_name);
+                        }
+                    }                    
                 }
             }
         } catch (IOException ex) {
@@ -130,6 +171,9 @@ public class FileIO {
             Logger.getLogger(FileIO.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
+                if (renamed) {
+                    renameFile(tmp_name, file_name);
+                }
                 if (ftpClient.isConnected()) {
                     ftpClient.logout();
                     ftpClient.disconnect();
@@ -138,8 +182,6 @@ public class FileIO {
                 if (!out_msg.equals(DOWN_COMPLETE_MSG)) {
                     out_msg = "  ... " + ex.getMessage();
                     error_msg = out_msg;
-                } else {
-                    error_msg = "  ... " + ex.getMessage();
                 }
                 Logger.getLogger(FileIO.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -152,9 +194,9 @@ public class FileIO {
         int port = Integer.parseInt(config.getFtp_port());
         FTPClient ftpClient = new FTPClient();
         String out_msg = "";
-        String server  = config.getFpt_server(); //"www.kleinhunde-berlin.com";
-        String user    = config.getFtp_user(); //"ftp_andreas@kleinhunde-berlin.com";
-        String pass    = config.getFtp_password(); //"Alien!001";
+        String server  = config.getFpt_server();
+        String user    = config.getFtp_user();
+        String pass    = config.getFtp_password();
         String up_name = file_name.substring(file_name.lastIndexOf("\\") + 1);
       
         error_msg = "";
@@ -189,8 +231,6 @@ public class FileIO {
                 if (!out_msg.equals(UP_COMPLETE_MSG)) {
                     out_msg = "  ... " + ex.getMessage();
                     error_msg = out_msg;
-                } else {
-                    error_msg = "  ... " + ex.getMessage();
                 }
                 Logger.getLogger(FileIO.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -234,6 +274,7 @@ public class FileIO {
             error_msg = out_msg;
             Logger.getLogger(FileIO.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
+            out_msg = "  ... " + ex.getMessage();
             error_msg = out_msg;
             Logger.getLogger(FileIO.class.getName()).log(Level.SEVERE, null, ex);
         }
