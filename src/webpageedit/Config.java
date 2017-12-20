@@ -34,8 +34,10 @@ public class Config {
     // Variable members
     private String config_file = "config.json";
 
-    private String ftp_port;
+    private String char_code;
     private String default_path;
+    private String ftp_port;
+    private String ftp_protocol;
     private String fpt_server;    
     private String ftp_user;
     private String ftp_password;
@@ -57,12 +59,20 @@ public class Config {
         return config_file;
     }
 
-    public String getFtp_port() {
-        return ftp_port;
+    public String getChar_code() {
+        return char_code;
     }
 
     public String getDefault_path() {
         return default_path;
+    }
+
+    public String getFtp_port() {
+        return ftp_port;
+    }
+    
+    public String getFtp_protocol() {
+        return ftp_protocol;
     }
 
     public String getFpt_server() {
@@ -91,14 +101,14 @@ public class Config {
         try {
             JSONObject config = loadConfigFile();
             
-            this.ftp_port     = (String) config.get("ftp_port");
-            this.default_path = (String)  config.get("default_path");
-            this.fpt_server   = (String)  config.get("fpt_server");
-            this.ftp_user     = (String)  config.get("ftp_user");
-            this.ftp_password = (String)  config.get("ftp_password");
-        } catch (IOException ex) {
-            Logger.getLogger(Config.class.getName()).log(Level.INFO, "no Config file");
-        } catch (ParseException ex) {
+            char_code    = (String) config.get("char_code");
+            default_path = (String) config.get("default_path");
+            ftp_port     = (String) config.get("ftp_port");
+            ftp_protocol = (String) config.get("ftp_protocol");
+            fpt_server   = (String) config.get("fpt_server");
+            ftp_user     = (String) config.get("ftp_user");
+            ftp_password = (String) config.get("ftp_password");
+        } catch (IOException | ParseException ex) {
             Logger.getLogger(Config.class.getName()).log(Level.SEVERE, null, ex);
         }      
     }

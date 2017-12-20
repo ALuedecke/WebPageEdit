@@ -1,0 +1,9 @@
+# Pathes
+build/
+test/
+dist/
+nbproject/
+
+# Files
+build.xml
+*.mf
