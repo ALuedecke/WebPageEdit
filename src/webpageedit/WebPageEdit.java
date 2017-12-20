@@ -54,6 +54,7 @@ public class WebPageEdit extends Application {
     private final Button     btnOpen = new Button();
     private final Button     btnUpload = new Button();
     private final Button     btnSave = new Button();
+    private final Label      lblCopyRight = new Label();
     private final Label      lblFile = new Label();
     private final Label      lblOut = new Label();
     private final Label      lblUpload = new Label();
@@ -105,7 +106,9 @@ public class WebPageEdit extends Application {
         return name;
     }
 
-    private void handleBtnClose() {
+    private boolean discardChanges() {
+        boolean discard = true;
+
         if (!btnSave.isDisabled()) {
             Optional<ButtonType> dlg_result;
             ConfirmDlg dlg = new ConfirmDlg(
@@ -115,8 +118,16 @@ public class WebPageEdit extends Application {
             dlg_result = dlg.show();
             
             if (dlg_result.get() == dlg.getBtnNo()) {
-                return;
+                discard = false;
             }
+        }
+        
+        return discard;
+    }
+
+    private void handleBtnClose() {
+        if (!discardChanges()) {
+            return;
         }
         System.exit(0);
     }
@@ -128,7 +139,8 @@ public class WebPageEdit extends Application {
                 String msg;
 
                 scene.setCursor(Cursor.WAIT); //Change cursor to wait style
-                if (htmlFile.getConfig().getFtp_port().equals("22") || htmlFile.getConfig().getFtp_protocol().equals("SFTP")) {
+                if (    htmlFile.getConfig().getFtp_port().equals("22")
+                     || htmlFile.getConfig().getFtp_protocol().equals("SFTP")) {
                     msg = htmlFile.downloadFileSFTP(txtFile.getText());
                 } else {
                     msg = htmlFile.downloadFileFTP(txtFile.getText());
@@ -148,17 +160,8 @@ public class WebPageEdit extends Application {
     }
     
     private void handleBtnOpen() {
-        if (!btnSave.isDisabled()) {
-            Optional<ButtonType> dlg_result;
-            ConfirmDlg dlg = new ConfirmDlg(
-                                     "Änderungen verwerfen",
-                                     "Sollen die Änderungen verworfen werden?"
-                                 );
-            dlg_result = dlg.show();
-            
-            if (dlg_result.get() == dlg.getBtnNo()) {
-                return;
-            }
+        if (!discardChanges()) {
+            return;
         }
         final String ini_path; 
         final String name;
@@ -211,7 +214,8 @@ public class WebPageEdit extends Application {
                 String msg;
                 
                 scene.setCursor(Cursor.WAIT); //Change cursor to wait style
-                if (htmlFile.getConfig().getFtp_port().equals("22") || htmlFile.getConfig().getFtp_protocol().equals("SFTP")) {
+                if (    htmlFile.getConfig().getFtp_port().equals("22")
+                     || htmlFile.getConfig().getFtp_protocol().equals("SFTP")) {
                     msg = htmlFile.uploadFileSFTP(txtFile.getText());
                 } else {
                     msg = htmlFile.uploadFileFTP(txtFile.getText());
@@ -233,7 +237,7 @@ public class WebPageEdit extends Application {
     
     private void initGui() {
         btnClose.setLayoutX(1210);
-        btnClose.setLayoutY(730);
+        btnClose.setLayoutY(720);
         btnClose.setText("Beenden");
         btnClose.setOnAction((ActionEvent event) -> {
             handleBtnClose();
@@ -254,18 +258,23 @@ public class WebPageEdit extends Application {
         });
 
         btnSave.setLayoutX(10);
-        btnSave.setLayoutY(730);
+        btnSave.setLayoutY(720);
         btnSave.setText("Speichern");
         btnSave.setOnAction((ActionEvent event) -> {
             handleBtnSave();
         });
 
         btnUpload.setLayoutX(90);
-        btnUpload.setLayoutY(730);
+        btnUpload.setLayoutY(720);
         btnUpload.setText("Upload");
         btnUpload.setOnAction((ActionEvent event) -> {
             handleBtnUpload();
         });
+
+        lblCopyRight.setLayoutX(10);
+        lblCopyRight.setLayoutY(755);
+        lblCopyRight.setStyle("-fx-font: normal 10px 'arial'");
+        lblCopyRight.setText("Copyright (c)  A. Luedecke 12/2017");
 
         lblFile.setLayoutX(10);
         lblFile.setLayoutY(13);
@@ -273,13 +282,13 @@ public class WebPageEdit extends Application {
         
         lblOut.setBackground(new Background(new BackgroundFill(Color.BLACK, CornerRadii.EMPTY, Insets.EMPTY)));
         lblOut.setLayoutX(565);
-        lblOut.setLayoutY(733);
+        lblOut.setLayoutY(723);
         lblOut.setPrefWidth(635);
         lblOut.setTextFill(Color.LIGHTGREEN);
         
         lblUpload.setBackground(new Background(new BackgroundFill(Color.BLACK, CornerRadii.EMPTY, Insets.EMPTY)));
         lblUpload.setLayoutX(155);
-        lblUpload.setLayoutY(733);
+        lblUpload.setLayoutY(723);
         lblUpload.setPrefWidth(400);
         lblUpload.setText(
             htmlFile.getConfig().getFtp_protocol() +
@@ -296,6 +305,7 @@ public class WebPageEdit extends Application {
         
         html.setLayoutX(10);
         html.setLayoutY(50);
+        html.setPrefHeight(660);
         html.setPrefWidth(1260);
         html.addEventHandler(KeyEvent.KEY_TYPED,  (KeyEvent event) -> {
             setButtons(true, false, true);
@@ -320,6 +330,7 @@ public class WebPageEdit extends Application {
         root.getChildren().add(lblUpload);
         root.getChildren().add(lblOut);
         root.getChildren().add(btnClose);
+        root.getChildren().add(lblCopyRight);
         
         setButtons(false, false, true);
     }
