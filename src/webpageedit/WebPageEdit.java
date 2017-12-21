@@ -401,6 +401,7 @@ public class WebPageEdit extends Application {
         
         primaryStage.setTitle("WebPage Editor - Version 1.0.1");
         primaryStage.setScene(scene);
+        primaryStage.setResizable(false);
         primaryStage.show();
     }
 
