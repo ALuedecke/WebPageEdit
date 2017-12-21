@@ -106,6 +106,22 @@ public class WebPageEdit extends Application {
         return name;
     }
 
+    private boolean confirmSvrLoad(String title, String text) {
+        boolean confirm = false;
+        Optional<ButtonType> dlg_result;
+        ConfirmDlg dlg = new ConfirmDlg(
+                                 title,
+                                 text
+                             );
+        dlg_result = dlg.show();
+            
+        if (dlg_result.get() == dlg.getBtnYes()) {
+            confirm = true;
+        }
+        
+        return confirm;
+    }
+    
     private boolean discardChanges() {
         boolean discard = true;
 
@@ -129,10 +145,24 @@ public class WebPageEdit extends Application {
         if (!discardChanges()) {
             return;
         }
+        if (!btnUpload.isDisabled()) {
+            if (!confirmSvrLoad("Upload ausstehend", "Änderungen wurden nicht hochgeladen.\nTrotzdem beenden?")) {
+                return;
+            }
+        }
         System.exit(0);
     }
     
     private void handleBtnDown() {
+        String file_name = txtFile.getText();
+        String up_name   = file_name.substring(file_name.lastIndexOf("\\") + 1);
+        
+        if (!confirmSvrLoad("Download", "Aktuelle Version \"" + up_name + "\" vom Server holen?")) {
+            return;
+        } else {
+            html.setDisable(true);
+        }
+        
         Task task = new Task() {
             @Override
             protected String call() throws Exception {
@@ -141,15 +171,18 @@ public class WebPageEdit extends Application {
                 scene.setCursor(Cursor.WAIT); //Change cursor to wait style
                 if (    htmlFile.getConfig().getFtp_port().equals("22")
                      || htmlFile.getConfig().getFtp_protocol().equals("SFTP")) {
-                    msg = htmlFile.downloadFileSFTP(txtFile.getText());
+                    msg = htmlFile.downloadFileSFTP(file_name);
                 } else {
-                    msg = htmlFile.downloadFileFTP(txtFile.getText());
+                    msg = htmlFile.downloadFileFTP(file_name);
                 }
                 updateMessage(msg);
                 if (htmlFile.getError_msg().equals("")) {
                     lblOut.setTextFill(Color.LAWNGREEN);
                 } else {
                     lblOut.setTextFill(Color.RED);
+                }
+                if (html.isDisabled()) {
+                    html.setDisable(false);
                 }
                 scene.setCursor(Cursor.DEFAULT); //Change cursor to default style
                 return msg;
@@ -162,6 +195,11 @@ public class WebPageEdit extends Application {
     private void handleBtnOpen() {
         if (!discardChanges()) {
             return;
+        }
+        if (!btnUpload.isDisabled()) {
+            if (!confirmSvrLoad("Upload ausstehend", "Änderungen wurden nicht hochgeladen.\nTrotzdem fortfahren?")) {
+                return;
+            }
         }
         final String ini_path; 
         final String name;
@@ -207,6 +245,14 @@ public class WebPageEdit extends Application {
     }
     
     private void handleBtnUpload() {
+        String file_name = txtFile.getText();
+        
+        if (!confirmSvrLoad("Upload", "Änderungen in  \"" + file_name + "\" auf den Server hochladen?")) {
+            return;
+        } else {
+            html.setDisable(true);
+        }
+
         Task task;
         task = new Task() {
             @Override
@@ -216,9 +262,9 @@ public class WebPageEdit extends Application {
                 scene.setCursor(Cursor.WAIT); //Change cursor to wait style
                 if (    htmlFile.getConfig().getFtp_port().equals("22")
                      || htmlFile.getConfig().getFtp_protocol().equals("SFTP")) {
-                    msg = htmlFile.uploadFileSFTP(txtFile.getText());
+                    msg = htmlFile.uploadFileSFTP(file_name);
                 } else {
-                    msg = htmlFile.uploadFileFTP(txtFile.getText());
+                    msg = htmlFile.uploadFileFTP(file_name);
                 }
                 updateMessage(msg);
                 if (htmlFile.getError_msg().equals("")) {
@@ -226,6 +272,9 @@ public class WebPageEdit extends Application {
                     setButtons(false, false, false) ;
                 } else {
                     lblOut.setTextFill(Color.RED);
+                }
+                if (html.isDisabled()) {
+                    html.setDisable(false);
                 }
                 scene.setCursor(Cursor.DEFAULT); //Change cursor to default style
                 return msg;
@@ -347,11 +396,12 @@ public class WebPageEdit extends Application {
     @Override
     public void start(Stage primaryStage) {
         initGui();
-
+        
         scene = new Scene(root, 1280, 768, Color.LIGHTGREY);
         
-        primaryStage.setTitle("WebPage Editor");
+        primaryStage.setTitle("WebPage Editor - Version 1.0.1");
         primaryStage.setScene(scene);
+        primaryStage.setResizable(false);
         primaryStage.show();
     }
 

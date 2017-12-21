@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 LuedeckeA
+ * Copyright (C) 2017 LuedeckeA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
