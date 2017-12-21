@@ -34,7 +34,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -107,11 +106,11 @@ public class WebPageEdit extends Application {
         return name;
     }
 
-    private boolean confirmSvrLoad(String text) {
+    private boolean confirmSvrLoad(String title, String text) {
         boolean confirm = false;
         Optional<ButtonType> dlg_result;
         ConfirmDlg dlg = new ConfirmDlg(
-                                 "Bestätigung",
+                                 title,
                                  text
                              );
         dlg_result = dlg.show();
@@ -147,7 +146,7 @@ public class WebPageEdit extends Application {
             return;
         }
         if (!btnUpload.isDisabled()) {
-            if (!confirmSvrLoad("Änderungen wurden nicht hochgeladen.\nTrotzdem Beenden?")) {
+            if (!confirmSvrLoad("Upload ausstehend", "Änderungen wurden nicht hochgeladen.\nTrotzdem beenden?")) {
                 return;
             }
         }
@@ -158,7 +157,7 @@ public class WebPageEdit extends Application {
         String file_name = txtFile.getText();
         String up_name   = file_name.substring(file_name.lastIndexOf("\\") + 1);
         
-        if (!confirmSvrLoad("Aktuelle Version \"" + up_name + "\" vom Server holen?")) {
+        if (!confirmSvrLoad("Download", "Aktuelle Version \"" + up_name + "\" vom Server holen?")) {
             return;
         } else {
             html.setDisable(true);
@@ -196,6 +195,11 @@ public class WebPageEdit extends Application {
     private void handleBtnOpen() {
         if (!discardChanges()) {
             return;
+        }
+        if (!btnUpload.isDisabled()) {
+            if (!confirmSvrLoad("Upload ausstehend", "Änderungen wurden nicht hochgeladen.\nTrotzdem fortfahren?")) {
+                return;
+            }
         }
         final String ini_path; 
         final String name;
@@ -243,7 +247,7 @@ public class WebPageEdit extends Application {
     private void handleBtnUpload() {
         String file_name = txtFile.getText();
         
-        if (!confirmSvrLoad("Änderungen in  \"" + file_name + "\" auf den Server hochladen?")) {
+        if (!confirmSvrLoad("Upload", "Änderungen in  \"" + file_name + "\" auf den Server hochladen?")) {
             return;
         } else {
             html.setDisable(true);
