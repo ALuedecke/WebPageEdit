@@ -157,7 +157,7 @@ public class WebPageEdit extends Application {
         String file_name = txtFile.getText();
         String up_name   = file_name.substring(file_name.lastIndexOf("\\") + 1);
         
-        if (!confirmSvrLoad("Download", "Aktuelle Version \"" + up_name + "\" vom Server holen?")) {
+        if (!confirmSvrLoad("Download", "Letzte Version \"" + up_name + "\" vom Server holen?")) {
             return;
         } else {
             html.setDisable(true);
@@ -397,7 +397,7 @@ public class WebPageEdit extends Application {
     public void start(Stage primaryStage) {
         initGui();
         
-        scene = new Scene(root, 1280, 768, Color.LIGHTGREY);
+        scene = new Scene(root, 1275, 768, Color.LIGHTGREY);
         
         primaryStage.setTitle("WebPage Editor - Version 1.0.1");
         primaryStage.setScene(scene);

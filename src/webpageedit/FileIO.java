@@ -246,7 +246,9 @@ public class FileIO {
         String server  = config.getFpt_server();
         String user    = config.getFtp_user();
         String pass    = config.getFtp_password();
-        String up_name = file_name.substring(file_name.lastIndexOf("\\") + 1);
+        String tmp_name = file_name + ".tmp";
+        String up_name  = file_name.substring(file_name.lastIndexOf("\\") + 1);
+        boolean renamed = renameFile(file_name, tmp_name);
 
         error_msg = "";
         
@@ -266,9 +268,21 @@ public class FileIO {
             OutputStream downloadFile = new BufferedOutputStream(new FileOutputStream(file_name));
             channelSftp.get(up_name, downloadFile);
             
+            downloadFile.flush();
             downloadFile.close();
             channelSftp.exit();
             session.disconnect();
+
+            String check = openFile(file_name);
+                    
+            if (check.equals("")) {
+                out_msg = NO_FILE_ON_SVR;
+                error_msg = out_msg;
+                deleteFile(file_name);
+                if(renamed) {
+                    renamed = !renameFile(tmp_name, file_name);
+                }
+            }                    
         } catch (JSchException | FileNotFoundException | SftpException ex) {
             out_msg = "  ... " + ex.getMessage();
             error_msg = out_msg;
@@ -277,6 +291,10 @@ public class FileIO {
             out_msg = "  ... " + ex.getMessage();
             error_msg = out_msg;
             Logger.getLogger(FileIO.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            if (renamed) {
+                renameFile(tmp_name, file_name);
+            }
         }
 
         return out_msg;
