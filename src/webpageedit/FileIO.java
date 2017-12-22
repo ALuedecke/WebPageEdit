@@ -282,7 +282,11 @@ public class FileIO {
                 if(renamed) {
                     renamed = !renameFile(tmp_name, file_name);
                 }
-            }                    
+            } else {
+                if (renamed) {
+                    renamed = !deleteFile(tmp_name);
+                }
+            }
         } catch (JSchException | FileNotFoundException | SftpException ex) {
             out_msg = "  ... " + ex.getMessage();
             error_msg = out_msg;
