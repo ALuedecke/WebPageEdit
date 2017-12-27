@@ -128,7 +128,7 @@ public class WebPageEdit extends Application {
         if (!btnSave.isDisabled()) {
             Optional<ButtonType> dlg_result;
             ConfirmDlg dlg = new ConfirmDlg(
-                                     "Änderungen verwerfen",
+                                     "Änderungen nicht gespeichert",
                                      "Sollen die Änderungen verworfen werden?"
                                  );
             dlg_result = dlg.show();
@@ -330,17 +330,17 @@ public class WebPageEdit extends Application {
         lblFile.setText("Lokale Datei:");
         
         lblOut.setBackground(new Background(new BackgroundFill(Color.BLACK, CornerRadii.EMPTY, Insets.EMPTY)));
-        lblOut.setLayoutX(565);
+        lblOut.setLayoutX(155);
         lblOut.setLayoutY(723);
-        lblOut.setPrefWidth(635);
+        lblOut.setPrefWidth(1045);
         lblOut.setTextFill(Color.LIGHTGREEN);
         
         lblUpload.setBackground(new Background(new BackgroundFill(Color.BLACK, CornerRadii.EMPTY, Insets.EMPTY)));
-        lblUpload.setLayoutX(155);
-        lblUpload.setLayoutY(723);
-        lblUpload.setPrefWidth(400);
+        lblUpload.setLayoutX(690);
+        lblUpload.setLayoutY(13);
+        lblUpload.setPrefWidth(450);
         lblUpload.setText(
-            htmlFile.getConfig().getFtp_protocol() +
+            "   " + htmlFile.getConfig().getFtp_protocol() +
             "://" +  htmlFile.getConfig().getFtp_user() +
             "@" + htmlFile.getConfig().getFpt_server() + 
             ":" + htmlFile.getConfig().getFtp_port()
