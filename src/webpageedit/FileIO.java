@@ -74,6 +74,7 @@ public class FileIO {
         return file.delete();
     }
 
+    @SuppressWarnings("ConvertToTryWithResources")
     public String openFile(String file_name) throws FileNotFoundException, IOException {
         boolean first_line = true;
         FileInputStream in = new FileInputStream(file_name);
