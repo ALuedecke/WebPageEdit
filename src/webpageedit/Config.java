@@ -97,6 +97,10 @@ public class Config {
         return (JSONObject) ((JSONArray) obj).get(0);
     }
     
+    private void saveConfigFile() {
+        
+    }
+    
     private void setConfiguration() {
         try {
             JSONObject config = loadConfigFile();
