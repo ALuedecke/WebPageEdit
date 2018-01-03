@@ -87,6 +87,26 @@ public class Config {
         return ftp_password;
     }
 
+    // Public methods
+    
+    public void saveConfigFile() throws IOException {
+        FileIO     cfg_file = new FileIO();
+        JSONArray  cfg_out  = new JSONArray();
+        JSONObject config   = new JSONObject();
+        
+        config.put("char_code",    char_code);
+        config.put("default_path", default_path);
+        config.put("ftp_port",     ftp_port);
+        config.put("ftp_protocol", ftp_protocol);
+        config.put("fpt_server",   fpt_server);
+        config.put("ftp_user",     ftp_user);
+        config.put("ftp_password", ftp_password);
+        
+        cfg_out.add(config);
+        
+        cfg_file.saveFile(config_file, cfg_out.toString());
+    }
+
     // Private methods
     
     private JSONObject loadConfigFile() throws IOException, ParseException {
@@ -96,11 +116,7 @@ public class Config {
         
         return (JSONObject) ((JSONArray) obj).get(0);
     }
-    
-    private void saveConfigFile() {
         
-    }
-    
     private void setConfiguration() {
         try {
             JSONObject config = loadConfigFile();
