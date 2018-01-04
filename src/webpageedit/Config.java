@@ -16,8 +16,14 @@
  */
 package webpageedit;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.simple.JSONArray;
@@ -89,8 +95,10 @@ public class Config {
 
     // Public methods
     
-    public void saveConfigFile() throws IOException {
-        FileIO     cfg_file = new FileIO();
+    public String saveConfigFile() {
+        String out_msg = "   ... Configuration saved successfully to \"" + config_file + "\".";
+        
+        // Creating json
         JSONArray  cfg_out  = new JSONArray();
         JSONObject config   = new JSONObject();
         
@@ -104,7 +112,31 @@ public class Config {
         
         cfg_out.add(config);
         
-        cfg_file.saveFile(config_file, cfg_out.toString());
+        // Saving the json to file
+        try {
+            BufferedWriter writer;
+            File target;
+            FileOutputStream out;
+            String text = cfg_out.toString();
+            
+            target = new File(config_file);
+            out = new FileOutputStream(target);
+            writer = new BufferedWriter(new OutputStreamWriter(out, getChar_code()));
+            
+            writer.write(text);
+            writer.flush();
+            writer.close();
+            out.flush();
+            out.close();
+        } catch (FileNotFoundException | UnsupportedEncodingException ex) {
+            out_msg = "  ... " + ex.getMessage();
+            Logger.getLogger(Config.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            out_msg = "  ... " + ex.getMessage();
+            Logger.getLogger(Config.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return out_msg;
     }
 
     // Private methods
