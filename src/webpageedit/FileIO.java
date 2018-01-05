@@ -125,7 +125,7 @@ public class FileIO {
         int port = Integer.parseInt(config.getFtp_port());
         FTPClient ftpClient = new FTPClient();
         String out_msg  = "";
-        String server   = config.getFpt_server();
+        String server   = config.getFtp_server();
         String user     = config.getFtp_user();
         String pass     = config.getFtp_password();
         String tmp_name = file_name + ".tmp";
@@ -195,7 +195,7 @@ public class FileIO {
         int port = Integer.parseInt(config.getFtp_port());
         FTPClient ftpClient = new FTPClient();
         String out_msg = "";
-        String server  = config.getFpt_server();
+        String server  = config.getFtp_server();
         String user    = config.getFtp_user();
         String pass    = config.getFtp_password();
         String up_name = file_name.substring(file_name.lastIndexOf("\\") + 1);
@@ -244,7 +244,7 @@ public class FileIO {
         int port  = Integer.parseInt(config.getFtp_port());
         JSch jsch = new JSch();
         String out_msg = DOWN_COMPLETE_MSG;
-        String server  = config.getFpt_server();
+        String server  = config.getFtp_server();
         String user    = config.getFtp_user();
         String pass    = config.getFtp_password();
         String tmp_name = file_name + ".tmp";
@@ -309,7 +309,7 @@ public class FileIO {
         int port  = Integer.parseInt(config.getFtp_port());
         JSch jsch = new JSch();
         String out_msg = UP_COMPLETE_MSG;
-        String server  = config.getFpt_server();
+        String server  = config.getFtp_server();
         String user    = config.getFtp_user();
         String pass    = config.getFtp_password();
         String up_name = file_name.substring(file_name.lastIndexOf("\\") + 1);

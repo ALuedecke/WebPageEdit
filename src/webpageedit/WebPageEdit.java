@@ -284,6 +284,16 @@ public class WebPageEdit extends Application {
         new Thread(task).start();
     }
     
+    private void handleLblUpload() {
+        lblOut.setText(htmlFile.getConfig().editConfig());
+        lblUpload.setText(
+            "   " + htmlFile.getConfig().getFtp_protocol() +
+            "://" +  htmlFile.getConfig().getFtp_user() +
+            "@" + htmlFile.getConfig().getFtp_server() + 
+            ":" + htmlFile.getConfig().getFtp_port()
+        );
+    }
+    
     private void initGui() {
         btnClose.setLayoutX(1210);
         btnClose.setLayoutY(720);
@@ -303,7 +313,8 @@ public class WebPageEdit extends Application {
         btnOpen.setLayoutY(10);
         btnOpen.setText("...");
         btnOpen.setOnAction((ActionEvent event) -> {
-            handleBtnOpen();
+            //handleBtnOpen();
+            handleLblUpload();
         });
 
         btnSave.setLayoutX(10);
@@ -342,7 +353,7 @@ public class WebPageEdit extends Application {
         lblUpload.setText(
             "   " + htmlFile.getConfig().getFtp_protocol() +
             "://" +  htmlFile.getConfig().getFtp_user() +
-            "@" + htmlFile.getConfig().getFpt_server() + 
+            "@" + htmlFile.getConfig().getFtp_server() + 
             ":" + htmlFile.getConfig().getFtp_port()
         );
         lblUpload.setTextFill(Color.WHITE);

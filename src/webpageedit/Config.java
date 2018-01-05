@@ -24,8 +24,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.scene.control.ButtonType;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -44,12 +46,11 @@ public class Config {
     private String default_path;
     private String ftp_port;
     private String ftp_protocol;
-    private String fpt_server;    
+    private String ftp_server;    
     private String ftp_user;
     private String ftp_password;
     
     // Constructors
-    
     public Config(String config_file) {
         this.config_file = config_file;
         setConfiguration();
@@ -60,7 +61,6 @@ public class Config {
     }
 
     // Getters
-
     public String getConfig_file() {
         return config_file;
     }
@@ -81,8 +81,8 @@ public class Config {
         return ftp_protocol;
     }
 
-    public String getFpt_server() {
-        return fpt_server;
+    public String getFtp_server() {
+        return ftp_server;
     }
 
     public String getFtp_user() {
@@ -94,8 +94,38 @@ public class Config {
     }
 
     // Public methods
+    public String editConfig() {
+        ConfigDlg dlg = new ConfigDlg(
+                                char_code
+                               ,default_path
+                               ,ftp_port
+                               ,ftp_protocol
+                               ,ftp_server
+                               ,ftp_user
+                               ,ftp_password
+                            );
+        Optional<ButtonType> dlg_result;
+        String out_msg = "";
+        
+        dlg_result = dlg.show();
+        
+        if (dlg_result.get() == dlg.getBtnSave()) {
+            char_code    = dlg.getChar_code();
+            default_path = dlg.getDefault_path();
+            ftp_port     = dlg.getFtp_port();
+            ftp_protocol = dlg.getFtp_protocol();
+            ftp_server   = dlg.getFtp_server();
+            ftp_user     = dlg.getFtp_user();
+            ftp_password = dlg.getFtp_password();
+            
+            out_msg = saveConfigFile();
+        }
+        
+        return out_msg;
+    }
     
-    public String saveConfigFile() {
+    // Private methods
+    private String saveConfigFile() {
         String out_msg = "   ... Configuration saved successfully to \"" + config_file + "\".";
         
         // Creating json
@@ -106,7 +136,7 @@ public class Config {
         config.put("default_path", default_path);
         config.put("ftp_port",     ftp_port);
         config.put("ftp_protocol", ftp_protocol);
-        config.put("fpt_server",   fpt_server);
+        config.put("ftp_server",   ftp_server);
         config.put("ftp_user",     ftp_user);
         config.put("ftp_password", ftp_password);
         
@@ -139,8 +169,6 @@ public class Config {
         return out_msg;
     }
 
-    // Private methods
-    
     private JSONObject loadConfigFile() throws IOException, ParseException {
         JSONParser parser = new JSONParser();
         
@@ -157,7 +185,7 @@ public class Config {
             default_path = (String) config.get("default_path");
             ftp_port     = (String) config.get("ftp_port");
             ftp_protocol = (String) config.get("ftp_protocol");
-            fpt_server   = (String) config.get("fpt_server");
+            ftp_server   = (String) config.get("ftp_server");
             ftp_user     = (String) config.get("ftp_user");
             ftp_password = (String) config.get("ftp_password");
         } catch (IOException | ParseException ex) {
