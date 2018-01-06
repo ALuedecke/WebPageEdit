@@ -32,9 +32,14 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
@@ -61,6 +66,10 @@ public class WebPageEdit extends Application {
     private final TextField  txtFile = new TextField();
     private final HTMLEditor html = new HTMLEditor();
     private final Group      root = new Group();
+    
+    // Context menue
+    ContextMenu ctxMenuConfig = new ContextMenu();
+    MenuItem    itmConfig     = new MenuItem("Einstellungen anpassen ...");
     
     // Display member
     private Scene scene;
@@ -285,7 +294,13 @@ public class WebPageEdit extends Application {
     }
     
     private void handleLblUpload() {
+        lblOut.textProperty().unbind();
         lblOut.setText(htmlFile.getConfig().editConfig());
+        if (htmlFile.getConfig().isWith_error()) {
+            lblOut.setTextFill(Color.RED);
+        } else {
+            lblOut.setTextFill(Color.LAWNGREEN);
+        }
         lblUpload.setText(
             "   " + htmlFile.getConfig().getFtp_protocol() +
             "://" +  htmlFile.getConfig().getFtp_user() +
@@ -295,6 +310,14 @@ public class WebPageEdit extends Application {
     }
     
     private void initGui() {
+        // Context menu
+        itmConfig.setOnAction((ActionEvent event) -> {
+            handleLblUpload();
+        });
+        
+        ctxMenuConfig.getItems().add(itmConfig);
+                
+        // UI controls
         btnClose.setLayoutX(1210);
         btnClose.setLayoutY(720);
         btnClose.setText("Beenden");
@@ -313,8 +336,7 @@ public class WebPageEdit extends Application {
         btnOpen.setLayoutY(10);
         btnOpen.setText("...");
         btnOpen.setOnAction((ActionEvent event) -> {
-            //handleBtnOpen();
-            handleLblUpload();
+            handleBtnOpen();
         });
 
         btnSave.setLayoutX(10);
@@ -357,7 +379,17 @@ public class WebPageEdit extends Application {
             ":" + htmlFile.getConfig().getFtp_port()
         );
         lblUpload.setTextFill(Color.WHITE);
-
+        lblUpload.setOnMouseClicked((MouseEvent event) -> {
+            if(event.getButton().equals(MouseButton.PRIMARY)){
+                if(event.getClickCount() == 2) {
+                    handleLblUpload();
+                }
+            }
+        });
+        lblUpload.setOnContextMenuRequested((ContextMenuEvent event) -> {
+            ctxMenuConfig.show(lblUpload, event.getScreenX(), event.getScreenY());
+        });
+        
         txtFile.setLayoutX(80);
         txtFile.setLayoutY(10);
         txtFile.setPrefWidth(425);
@@ -379,7 +411,8 @@ public class WebPageEdit extends Application {
         } catch (IOException ex) {
             Logger.getLogger(WebPageEdit.class.getName()).log(Level.SEVERE, null, ex);
         }
-
+        
+        // Display
         root.getChildren().add(html);
         root.getChildren().add(lblFile);
         root.getChildren().add(txtFile);
@@ -410,7 +443,7 @@ public class WebPageEdit extends Application {
         
         scene = new Scene(root, 1275, 768, Color.LIGHTGREY);
         
-        primaryStage.setTitle("WebPage Editor - Version 1.0.1");
+        primaryStage.setTitle("WebPage Editor - Version 1.0.2");
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
         primaryStage.show();

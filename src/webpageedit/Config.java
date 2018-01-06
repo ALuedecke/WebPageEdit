@@ -40,6 +40,8 @@ import org.json.simple.parser.ParseException;
 public class Config {
 
     // Variable members
+    private boolean with_error = false;
+    
     private String config_file = "config.json";
 
     private String char_code;
@@ -61,6 +63,10 @@ public class Config {
     }
 
     // Getters
+    public boolean isWith_error() {
+        return with_error;
+    }
+    
     public String getConfig_file() {
         return config_file;
     }
@@ -143,6 +149,7 @@ public class Config {
         cfg_out.add(config);
         
         // Saving the json to file
+        with_error = false;
         try {
             BufferedWriter writer;
             File target;
@@ -158,10 +165,16 @@ public class Config {
             writer.close();
             out.flush();
             out.close();
-        } catch (FileNotFoundException | UnsupportedEncodingException ex) {
+        } catch (UnsupportedEncodingException ex) {
+            with_error = true;
+            out_msg = "  ... nicht unterstützte Zeichen-Codierung: " + ex.getMessage();
+            Logger.getLogger(Config.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (FileNotFoundException ex) {
+            with_error = true;
             out_msg = "  ... " + ex.getMessage();
             Logger.getLogger(Config.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
+            with_error = true;
             out_msg = "  ... " + ex.getMessage();
             Logger.getLogger(Config.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -188,8 +201,9 @@ public class Config {
             ftp_server   = (String) config.get("ftp_server");
             ftp_user     = (String) config.get("ftp_user");
             ftp_password = (String) config.get("ftp_password");
-        } catch (IOException | ParseException ex) {
+        } catch (IOException | ParseException  ex) {
             Logger.getLogger(Config.class.getName()).log(Level.SEVERE, null, ex);
-        }      
+            editConfig();
+        } 
     }
 }
