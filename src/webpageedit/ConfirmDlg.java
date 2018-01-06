@@ -27,9 +27,9 @@ import javafx.scene.control.ButtonType;
  */
 public class ConfirmDlg {
     // Dialog members
-    Alert      alert  = new Alert(AlertType.CONFIRMATION);
-    ButtonType btnYes = new ButtonType("Ja");
-    ButtonType btnNo  = new ButtonType("Nein");
+    private final Alert      alert  = new Alert(AlertType.CONFIRMATION);
+    private final ButtonType btnYes = new ButtonType("Ja");
+    private final ButtonType btnNo  = new ButtonType("Nein");
 
     // Constructor
     public ConfirmDlg(String title, String text) {

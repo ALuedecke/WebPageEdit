@@ -32,9 +32,14 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
@@ -61,6 +66,10 @@ public class WebPageEdit extends Application {
     private final TextField  txtFile = new TextField();
     private final HTMLEditor html = new HTMLEditor();
     private final Group      root = new Group();
+    
+    // Context menue
+    ContextMenu ctxMenuConfig = new ContextMenu();
+    MenuItem    itmConfig     = new MenuItem("Einstellungen anpassen ...");
     
     // Display member
     private Scene scene;
@@ -128,7 +137,7 @@ public class WebPageEdit extends Application {
         if (!btnSave.isDisabled()) {
             Optional<ButtonType> dlg_result;
             ConfirmDlg dlg = new ConfirmDlg(
-                                     "Änderungen verwerfen",
+                                     "Änderungen nicht gespeichert",
                                      "Sollen die Änderungen verworfen werden?"
                                  );
             dlg_result = dlg.show();
@@ -284,7 +293,31 @@ public class WebPageEdit extends Application {
         new Thread(task).start();
     }
     
+    private void handleLblUpload() {
+        lblOut.textProperty().unbind();
+        lblOut.setText(htmlFile.getConfig().editConfig());
+        if (htmlFile.getConfig().isWith_error()) {
+            lblOut.setTextFill(Color.RED);
+        } else {
+            lblOut.setTextFill(Color.LAWNGREEN);
+        }
+        lblUpload.setText(
+            "   " + htmlFile.getConfig().getFtp_protocol() +
+            "://" +  htmlFile.getConfig().getFtp_user() +
+            "@" + htmlFile.getConfig().getFtp_server() + 
+            ":" + htmlFile.getConfig().getFtp_port()
+        );
+    }
+    
     private void initGui() {
+        // Context menu
+        itmConfig.setOnAction((ActionEvent event) -> {
+            handleLblUpload();
+        });
+        
+        ctxMenuConfig.getItems().add(itmConfig);
+                
+        // UI controls
         btnClose.setLayoutX(1210);
         btnClose.setLayoutY(720);
         btnClose.setText("Beenden");
@@ -330,23 +363,33 @@ public class WebPageEdit extends Application {
         lblFile.setText("Lokale Datei:");
         
         lblOut.setBackground(new Background(new BackgroundFill(Color.BLACK, CornerRadii.EMPTY, Insets.EMPTY)));
-        lblOut.setLayoutX(565);
+        lblOut.setLayoutX(155);
         lblOut.setLayoutY(723);
-        lblOut.setPrefWidth(635);
+        lblOut.setPrefWidth(1045);
         lblOut.setTextFill(Color.LIGHTGREEN);
         
         lblUpload.setBackground(new Background(new BackgroundFill(Color.BLACK, CornerRadii.EMPTY, Insets.EMPTY)));
-        lblUpload.setLayoutX(155);
-        lblUpload.setLayoutY(723);
-        lblUpload.setPrefWidth(400);
+        lblUpload.setLayoutX(690);
+        lblUpload.setLayoutY(13);
+        lblUpload.setPrefWidth(450);
         lblUpload.setText(
-            htmlFile.getConfig().getFtp_protocol() +
+            "   " + htmlFile.getConfig().getFtp_protocol() +
             "://" +  htmlFile.getConfig().getFtp_user() +
-            "@" + htmlFile.getConfig().getFpt_server() + 
+            "@" + htmlFile.getConfig().getFtp_server() + 
             ":" + htmlFile.getConfig().getFtp_port()
         );
         lblUpload.setTextFill(Color.WHITE);
-
+        lblUpload.setOnMouseClicked((MouseEvent event) -> {
+            if(event.getButton().equals(MouseButton.PRIMARY)){
+                if(event.getClickCount() == 2) {
+                    handleLblUpload();
+                }
+            }
+        });
+        lblUpload.setOnContextMenuRequested((ContextMenuEvent event) -> {
+            ctxMenuConfig.show(lblUpload, event.getScreenX(), event.getScreenY());
+        });
+        
         txtFile.setLayoutX(80);
         txtFile.setLayoutY(10);
         txtFile.setPrefWidth(425);
@@ -368,7 +411,8 @@ public class WebPageEdit extends Application {
         } catch (IOException ex) {
             Logger.getLogger(WebPageEdit.class.getName()).log(Level.SEVERE, null, ex);
         }
-
+        
+        // Display
         root.getChildren().add(html);
         root.getChildren().add(lblFile);
         root.getChildren().add(txtFile);
@@ -399,7 +443,7 @@ public class WebPageEdit extends Application {
         
         scene = new Scene(root, 1275, 768, Color.LIGHTGREY);
         
-        primaryStage.setTitle("WebPage Editor - Version 1.0.1");
+        primaryStage.setTitle("WebPage Editor - Version 1.0.2");
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
         primaryStage.show();
