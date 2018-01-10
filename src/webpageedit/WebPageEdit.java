@@ -36,6 +36,7 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
@@ -122,6 +123,8 @@ public class WebPageEdit extends Application {
                                  title,
                                  text
                              );
+        dlg.setBack_color("#FFFFF0");
+        
         dlg_result = dlg.show();
             
         if (dlg_result.get() == dlg.getBtnYes()) {
@@ -356,7 +359,7 @@ public class WebPageEdit extends Application {
         lblCopyRight.setLayoutX(10);
         lblCopyRight.setLayoutY(755);
         lblCopyRight.setStyle("-fx-font: normal 10px 'arial'");
-        lblCopyRight.setText("Copyright (c)  A. Luedecke 12/2017");
+        lblCopyRight.setText("Copyright (c)  A. Luedecke  2017 / 2018");
 
         lblFile.setLayoutX(10);
         lblFile.setLayoutY(13);
@@ -441,9 +444,10 @@ public class WebPageEdit extends Application {
     public void start(Stage primaryStage) {
         initGui();
         
-        scene = new Scene(root, 1275, 768, Color.LIGHTGREY);
+        scene = new Scene(root, 1275, 768, Color.rgb(0xEA, 0xF0, 0xFF, .99));
         
-        primaryStage.setTitle("WebPage Editor - Version 1.0.2");
+        primaryStage.getIcons().add(new Image("file:res/app_icon.png"));
+        primaryStage.setTitle("WebPage Editor - Version 1.0.3");
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
         primaryStage.show();
