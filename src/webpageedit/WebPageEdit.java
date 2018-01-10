@@ -16,7 +16,6 @@
  */
 package webpageedit;
 
-import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -46,9 +45,10 @@ import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.paint.Color;
 import javafx.scene.web.HTMLEditor;
+import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
-import javax.swing.JFileChooser;
-import javax.swing.filechooser.FileFilter;
+
 /**
  *
  * @author LuedeckeA
@@ -72,46 +72,29 @@ public class WebPageEdit extends Application {
     ContextMenu ctxMenuConfig = new ContextMenu();
     MenuItem    itmConfig     = new MenuItem("Einstellungen anpassen ...");
     
-    // Display member
+    // Display members
     private Scene scene;
+    private Stage main_window;
     
     // IO members
     private final FileIO htmlFile = new FileIO();
     
     // private methods
-    private String chooseFilePath(int dlg_type, int sel_mode, String ini_path, FileFilter filter) {
-        String name ="";
+    private String chooseFilePath(Stage window, String ini_path) {
+        ExtensionFilter extFilter = new FileChooser.ExtensionFilter(
+                                          "Web Documents (*.htm, *.html)"
+                                         ,"*.htm", "*.html");
+        FileChooser chooser = new FileChooser();
+        File path = new File(ini_path);
+        String name = "";
         
-        final JFileChooser chooser = new JFileChooser(); 
-        final File path; 
-
-        path = new File(ini_path);
-        chooser.setDialogType(dlg_type); 
-        chooser.setFileSelectionMode(sel_mode);
-        chooser.setCurrentDirectory(path); 
-
-        chooser.addPropertyChangeListener((PropertyChangeEvent e) -> {
-            if (e.getPropertyName().equals(JFileChooser.SELECTED_FILE_CHANGED_PROPERTY)
-                || e.getPropertyName().equals(JFileChooser.DIRECTORY_CHANGED_PROPERTY)) {
-                final File f = (File) e.getNewValue();
-            }
-        });
+        chooser.getExtensionFilters().add(extFilter);
+        chooser.setInitialDirectory(new File(path.toString().replaceAll(path.getName(), "")));
+        File file = chooser.showOpenDialog(window);
         
-        try {
-            chooser.addChoosableFileFilter(filter);
-            chooser.setAcceptAllFileFilterUsed(false);
-        } catch (NullPointerException ex) {
-            Logger.getLogger(WebPageEdit.class.getName()).log(Level.INFO, "no FileFilter submitted");
+        if (file != null) {
+            name = file.getAbsolutePath();
         }
-
-        chooser.setVisible(true); 
-        final int result = chooser.showOpenDialog(null); 
-
-        if (result == JFileChooser.APPROVE_OPTION) { 
-            name = chooser.getSelectedFile().getPath(); 
-        } 
-        
-        chooser.setVisible(false);
         
         return name;
     }
@@ -213,27 +196,12 @@ public class WebPageEdit extends Application {
                 return;
             }
         }
+
         final String ini_path; 
         final String name;
         ini_path = txtFile.getText();
-        name = chooseFilePath(
-                   JFileChooser.OPEN_DIALOG
-                  ,JFileChooser.FILES_ONLY
-                  ,ini_path
-                  ,new FileFilter() {
-                      @Override
-                      public String getDescription() {
-                          return "Web Documents (*.html)";
-                      }
-                      @Override
-                      public boolean accept(File f) {
-                          return (
-                              f.getName().toLowerCase().endsWith(".html") ||
-                              f.isDirectory()
-                          );
-                      }
-                   }
-               );        
+        name = chooseFilePath(main_window, ini_path);
+
         if(!name.equals("")) {
             txtFile.setText(name);
             try {
@@ -299,17 +267,21 @@ public class WebPageEdit extends Application {
     private void handleLblUpload() {
         lblOut.textProperty().unbind();
         lblOut.setText(htmlFile.getConfig().editConfig());
+        
         if (htmlFile.getConfig().isWith_error()) {
             lblOut.setTextFill(Color.RED);
         } else {
             lblOut.setTextFill(Color.LAWNGREEN);
         }
+        
         lblUpload.setText(
             "   " + htmlFile.getConfig().getFtp_protocol() +
             "://" +  htmlFile.getConfig().getFtp_user() +
             "@" + htmlFile.getConfig().getFtp_server() + 
             ":" + htmlFile.getConfig().getFtp_port()
         );
+        
+        txtFile.setText(htmlFile.getConfig().getDefault_path());
     }
     
     private void initGui() {
@@ -444,13 +416,14 @@ public class WebPageEdit extends Application {
     public void start(Stage primaryStage) {
         initGui();
         
+        main_window = primaryStage;
         scene = new Scene(root, 1275, 768, Color.rgb(0xEA, 0xF0, 0xFF, .99));
         
-        primaryStage.getIcons().add(new Image("file:res/app_icon.png"));
-        primaryStage.setTitle("WebPage Editor - Version 1.0.3");
-        primaryStage.setScene(scene);
-        primaryStage.setResizable(false);
-        primaryStage.show();
+        main_window.getIcons().add(new Image("file:res/app_icon.png"));
+        main_window.setTitle("WebPage Editor - Version 1.0.3");
+        main_window.setScene(scene);
+        main_window.setResizable(false);
+        main_window.show();
     }
 
     /**
