@@ -20,6 +20,8 @@ import java.util.Optional;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
+import javafx.scene.image.Image;
+import javafx.stage.Stage;
 
 /**
  *
@@ -31,21 +33,35 @@ public class ConfirmDlg {
     private final ButtonType btnYes = new ButtonType("Ja");
     private final ButtonType btnNo  = new ButtonType("Nein");
 
+    // Default background color
+    private String back_color = "#FFF0F0";
+    
     // Constructor
     public ConfirmDlg(String title, String text) {
+
         alert.setTitle(title);
         alert.setHeaderText(text);
         alert.setContentText(null);
         alert.getButtonTypes().setAll(btnYes, btnNo);
+        alert.getDialogPane().setStyle("-fx-background-color:" + back_color);
+        
+        // Dialog icon
+        Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+        stage.getIcons().add(new Image("file:res/dlg_icon.png"));
     }
 
-    // Getters
+    // Getters / Setters
     public ButtonType getBtnYes() {    
         return btnYes;
     }
 
     public ButtonType getBtnNo() {    
         return btnNo;
+    }
+
+    public void setBack_color(String back_color) {
+        this.back_color = back_color;
+        alert.getDialogPane().setStyle("-fx-background-color:" + this.back_color);
     }
 
     // Public methods

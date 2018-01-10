@@ -22,7 +22,9 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
 import javafx.scene.layout.GridPane;
+import javafx.stage.Stage;
 
 /**
  *
@@ -155,7 +157,12 @@ public class ConfigDlg {
         dialog.getDialogPane().getButtonTypes().setAll(btnSave, btnCancel);
         dialog.getDialogPane().lookupButton(btnSave).setDisable(true);
         dialog.getDialogPane().setContent(grid);
+        dialog.getDialogPane().setStyle("-fx-background-color:#F0FFF0");
         
+        // Dialog icon
+        Stage stage = (Stage) dialog.getDialogPane().getScene().getWindow();
+        stage.getIcons().add(new Image("file:res/dlg_icon.png"));
+
         // User interface
         txtCharCode.setText(char_code);
         txtCharCode.textProperty().addListener((observable, oldValue, newValue) -> {
