@@ -55,18 +55,22 @@ import javafx.stage.Stage;
  */
 public class WebPageEdit extends Application {
     // GUI members
-    private final Button     btnClose = new Button();
-    private final Button     btnDown = new Button();
-    private final Button     btnOpen = new Button();
-    private final Button     btnUpload = new Button();
-    private final Button     btnSave = new Button();
+    private final Button     btnClose     = new Button();
+    private final Button     btnDown      = new Button();
+    private final Button     btnOpen      = new Button();
+    private final Button     btnSave      = new Button();
+    private final Button     btnUpload    = new Button();
     private final Label      lblCopyRight = new Label();
-    private final Label      lblFile = new Label();
-    private final Label      lblOut = new Label();
-    private final Label      lblUpload = new Label();
-    private final TextField  txtFile = new TextField();
-    private final HTMLEditor html = new HTMLEditor();
-    private final Group      root = new Group();
+    private final Label      lblFile      = new Label();
+    private final Label      lblOut       = new Label();
+    private final Label      lblUpload    = new Label();
+    private final TextField  txtFile      = new TextField();
+    private final HTMLEditor html         = new HTMLEditor();
+    private final Group      root         = new Group();
+    
+    // Button status
+    private boolean status_btn_save   = false;
+    private boolean status_btn_upload = false;
     
     // Context menue
     ContextMenu ctxMenuConfig = new ContextMenu();
@@ -97,6 +101,25 @@ public class WebPageEdit extends Application {
         }
         
         return name;
+    }
+
+    private boolean confirmSave() {
+        boolean save = true;
+
+        if (!btnSave.isDisabled()) {
+            Optional<ButtonType> dlg_result;
+            ConfirmDlg dlg = new ConfirmDlg(
+                                     "Änderungen nicht gespeichert",
+                                     "Sollen die Änderungen gespeichert werden?"
+                                 );
+            dlg_result = dlg.show();
+            
+            if (dlg_result.get() == dlg.getBtnNo()) {
+                save = false;
+            }
+        }
+        
+        return save;
     }
 
     private boolean confirmSvrLoad(String title, String text) {
@@ -156,7 +179,7 @@ public class WebPageEdit extends Application {
         if (!confirmSvrLoad("Download", "Letzte Version \"" + up_name + "\" vom Server holen?")) {
             return;
         } else {
-            html.setDisable(true);
+            setControls(true);
         }
         
         Task task = new Task() {
@@ -177,9 +200,7 @@ public class WebPageEdit extends Application {
                 } else {
                     lblOut.setTextFill(Color.RED);
                 }
-                if (html.isDisabled()) {
-                    html.setDisable(false);
-                }
+                setControls(false);
                 scene.setCursor(Cursor.DEFAULT); //Change cursor to default style
                 return msg;
             }
@@ -231,7 +252,7 @@ public class WebPageEdit extends Application {
         if (!confirmSvrLoad("Upload", "Änderungen in  \"" + file_name + "\" auf den Server hochladen?")) {
             return;
         } else {
-            html.setDisable(true);
+            setControls(true);
         }
 
         Task task;
@@ -248,14 +269,12 @@ public class WebPageEdit extends Application {
                     msg = htmlFile.uploadFileFTP(file_name);
                 }
                 updateMessage(msg);
+                setControls(false);
                 if (htmlFile.getError_msg().equals("")) {
                     lblOut.setTextFill(Color.LAWNGREEN);
                     setButtons(false, false, false) ;
                 } else {
                     lblOut.setTextFill(Color.RED);
-                }
-                if (html.isDisabled()) {
-                    html.setDisable(false);
                 }
                 scene.setCursor(Cursor.DEFAULT); //Change cursor to default style
                 return msg;
@@ -419,6 +438,24 @@ public class WebPageEdit extends Application {
         }
         btnSave.setDisable(!save);
         btnUpload.setDisable(!upload);
+        status_btn_save   = btnSave.isDisabled();
+        status_btn_upload = btnUpload.isDisabled();
+    }
+    
+    private void setControls(boolean server_action) {
+        if (server_action) {
+            btnSave.setDisable(true);
+            btnUpload.setDisable(true);
+        } else {
+            btnSave.setDisable(status_btn_save);
+            btnUpload.setDisable(status_btn_upload);            
+        }
+
+        btnClose.setDisable(server_action);
+        btnDown.setDisable(server_action);
+        btnOpen.setDisable(server_action);
+        html.setDisable(server_action);
+        txtFile.setDisable(server_action);
     }
     
     @Override
