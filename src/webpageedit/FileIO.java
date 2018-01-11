@@ -180,7 +180,7 @@ public class FileIO {
                     ftpClient.disconnect();
                 }
             } catch (IOException ex) {
-                if (!out_msg.equals(DOWN_COMPLETE_MSG)) {
+                if (!out_msg.equals(DOWN_COMPLETE_MSG) && !out_msg.equals(NO_FILE_ON_SVR)) {
                     out_msg = "  ... " + ex.getMessage();
                     error_msg = out_msg;
                 }

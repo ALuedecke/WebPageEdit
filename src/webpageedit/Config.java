@@ -40,6 +40,7 @@ import org.json.simple.parser.ParseException;
 public class Config {
 
     // Variable members
+    private boolean dlg_canceled = false;
     private boolean with_error = false;
     
     private String config_file = "config.json";
@@ -63,6 +64,10 @@ public class Config {
     }
 
     // Getters
+    public boolean isDlg_canceled() {
+        return dlg_canceled;
+    }
+
     public boolean isWith_error() {
         return with_error;
     }
@@ -125,6 +130,9 @@ public class Config {
             ftp_password = dlg.getFtp_password();
             
             out_msg = saveConfigFile();
+            dlg_canceled = false;
+        } else {
+            dlg_canceled = true;
         }
         
         return out_msg;
