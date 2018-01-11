@@ -274,14 +274,22 @@ public class WebPageEdit extends Application {
             lblOut.setTextFill(Color.LAWNGREEN);
         }
         
-        lblUpload.setText(
-            "   " + htmlFile.getConfig().getFtp_protocol() +
-            "://" +  htmlFile.getConfig().getFtp_user() +
-            "@" + htmlFile.getConfig().getFtp_server() + 
-            ":" + htmlFile.getConfig().getFtp_port()
-        );
-        
-        txtFile.setText(htmlFile.getConfig().getDefault_path());
+        if (!htmlFile.getConfig().isDlg_canceled()) {
+            lblUpload.setText(
+                "   " + htmlFile.getConfig().getFtp_protocol() +
+                "://" +  htmlFile.getConfig().getFtp_user() +
+                "@" + htmlFile.getConfig().getFtp_server() + 
+                ":" + htmlFile.getConfig().getFtp_port()
+            );
+
+            txtFile.setText(htmlFile.getConfig().getDefault_path());
+            
+            try {
+                html.setHtmlText(htmlFile.openFile(txtFile.getText()));
+            } catch (IOException ex) {
+                Logger.getLogger(WebPageEdit.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
     
     private void initGui() {
@@ -420,7 +428,7 @@ public class WebPageEdit extends Application {
         scene = new Scene(root, 1275, 768, Color.rgb(0xEA, 0xF0, 0xFF, .99));
         
         main_window.getIcons().add(new Image("file:res/app_icon.png"));
-        main_window.setTitle("WebPage Editor - Version 1.0.3");
+        main_window.setTitle("WebPage Editor - Version 1.0.4");
         main_window.setScene(scene);
         main_window.setResizable(false);
         main_window.show();
