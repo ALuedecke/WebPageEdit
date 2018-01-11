@@ -145,6 +145,7 @@ public class WebPageEdit extends Application {
                 return;
             }
         }
+        
         System.exit(0);
     }
     
@@ -439,6 +440,5 @@ public class WebPageEdit extends Application {
      */
     public static void main(String[] args) {
         launch(args);
-    }
-    
+    }    
 }
