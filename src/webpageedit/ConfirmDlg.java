@@ -38,7 +38,6 @@ public class ConfirmDlg {
     
     // Constructor
     public ConfirmDlg(String title, String text) {
-
         alert.setTitle(title);
         alert.setHeaderText(text);
         alert.setContentText(null);
