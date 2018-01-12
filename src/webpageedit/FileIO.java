@@ -74,6 +74,11 @@ public class FileIO {
         return file.delete();
     }
 
+    public boolean existFile(String file_name) {
+        File file = new File(file_name);
+        return file.exists();
+    }
+
     @SuppressWarnings("ConvertToTryWithResources")
     public String openFile(String file_name) throws FileNotFoundException, IOException {
         boolean first_line = true;

@@ -48,6 +48,7 @@ import javafx.scene.web.HTMLEditor;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 /**
  *
@@ -69,6 +70,7 @@ public class WebPageEdit extends Application {
     private final Group      root         = new Group();
     
     // Button status
+    private boolean server_action     = false;
     private boolean status_btn_save   = false;
     private boolean status_btn_upload = false;
     
@@ -104,18 +106,18 @@ public class WebPageEdit extends Application {
     }
 
     private boolean confirmSave() {
-        boolean save = true;
+        boolean save = false;
 
         if (!btnSave.isDisabled()) {
             Optional<ButtonType> dlg_result;
             ConfirmDlg dlg = new ConfirmDlg(
                                      "Änderungen nicht gespeichert",
-                                     "Sollen die Änderungen gespeichert werden?"
+                                     "Sollen die Änderungen vor dem Beenden gespeichert werden?"
                                  );
             dlg_result = dlg.show();
             
-            if (dlg_result.get() == dlg.getBtnNo()) {
-                save = false;
+            if (dlg_result.get() == dlg.getBtnYes()) {
+                save = true;
             }
         }
         
@@ -182,6 +184,7 @@ public class WebPageEdit extends Application {
             setControls(true);
         }
         
+        server_action = true;
         Task task = new Task() {
             @Override
             protected String call() throws Exception {
@@ -202,6 +205,7 @@ public class WebPageEdit extends Application {
                 }
                 setControls(false);
                 scene.setCursor(Cursor.DEFAULT); //Change cursor to default style
+                server_action = false;
                 return msg;
             }
         };
@@ -246,15 +250,17 @@ public class WebPageEdit extends Application {
         }
     }
     
-    private void handleBtnUpload() {
+    private void handleBtnUpload(boolean confirm) {
         String file_name = txtFile.getText();
         
-        if (!confirmSvrLoad("Upload", "Änderungen in  \"" + file_name + "\" auf den Server hochladen?")) {
-            return;
-        } else {
-            setControls(true);
+        if (confirm) {
+            if (!confirmSvrLoad("Upload", "Änderungen in  \"" + file_name + "\" auf den Server hochladen?")) {
+                return;
+            }
         }
 
+        server_action = true;
+        setControls(server_action);
         Task task;
         task = new Task() {
             @Override
@@ -277,6 +283,7 @@ public class WebPageEdit extends Application {
                     lblOut.setTextFill(Color.RED);
                 }
                 scene.setCursor(Cursor.DEFAULT); //Change cursor to default style
+                server_action = false;
                 return msg;
             }
         };
@@ -284,6 +291,17 @@ public class WebPageEdit extends Application {
         new Thread(task).start();
     }
     
+    private void handleCloseRequest() {
+        if (confirmSave()) {
+            handleBtnSave();
+        }
+        if (!btnUpload.isDisabled()) {
+            if (confirmSvrLoad("Upload ausstehend", "Änderungen wurden nicht hochgeladen.\nVor Beenden hochladen?")) {
+                handleBtnUpload(false);
+            }
+        }
+    }
+
     private void handleLblUpload() {
         lblOut.textProperty().unbind();
         lblOut.setText(htmlFile.getConfig().editConfig());
@@ -353,7 +371,7 @@ public class WebPageEdit extends Application {
         btnUpload.setLayoutY(720);
         btnUpload.setText("Upload");
         btnUpload.setOnAction((ActionEvent event) -> {
-            handleBtnUpload();
+            handleBtnUpload(true);
         });
 
         lblCopyRight.setLayoutX(10);
@@ -469,6 +487,9 @@ public class WebPageEdit extends Application {
         main_window.setTitle("WebPage Editor - Version 1.0.4");
         main_window.setScene(scene);
         main_window.setResizable(false);
+        main_window.setOnCloseRequest((WindowEvent event) -> {
+            handleCloseRequest();
+        });
         main_window.show();
     }
 
