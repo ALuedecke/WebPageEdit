@@ -5,6 +5,7 @@ dist/
 nbproject/
 
 # Files
+res/Thumbs.db
 build.xml
 *.mf
-res/Thumbs.db
+config*.json
