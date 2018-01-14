@@ -271,27 +271,16 @@ public class FileIO {
             channel.connect();
             ChannelSftp channelSftp = (ChannelSftp) channel;
             
-            OutputStream downloadFile = new BufferedOutputStream(new FileOutputStream(file_name));
-            channelSftp.get(up_name, downloadFile);
-            
-            downloadFile.flush();
-            downloadFile.close();
-            channelSftp.exit();
-            session.disconnect();
+            try (OutputStream downloadFile = new BufferedOutputStream(new FileOutputStream(file_name))) {
+                channelSftp.get(up_name, downloadFile);
+                downloadFile.flush();
+            } finally {
+                channelSftp.exit();
+                session.disconnect();
+            }
 
-            String check = openFile(file_name);
-                    
-            if (check.equals("")) {
-                out_msg = NO_FILE_ON_SVR;
-                error_msg = out_msg;
-                deleteFile(file_name);
-                if(renamed) {
-                    renamed = !renameFile(tmp_name, file_name);
-                }
-            } else {
-                if (renamed) {
-                    renamed = !deleteFile(tmp_name);
-                }
+            if (renamed) {
+                renamed = !deleteFile(tmp_name);
             }
         } catch (JSchException | FileNotFoundException | SftpException ex) {
             out_msg = "  ... " + ex.getMessage();
@@ -303,7 +292,11 @@ public class FileIO {
             Logger.getLogger(FileIO.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             if (renamed) {
-                renameFile(tmp_name, file_name);
+                boolean empty_exist = !renameFile(tmp_name, file_name);
+                if (empty_exist) {
+                    deleteFile(file_name);
+                    renameFile(tmp_name, file_name);
+                }
             }
         }
 
