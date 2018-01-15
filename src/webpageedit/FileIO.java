@@ -276,6 +276,7 @@ public class FileIO {
                 downloadFile.flush();
             } finally {
                 channelSftp.exit();
+                channel.disconnect();
                 session.disconnect();
             }
 
@@ -331,6 +332,7 @@ public class FileIO {
             channelSftp.put(uploadFile, up_name, ChannelSftp.OVERWRITE);
 
             channelSftp.exit();
+            channel.disconnect();
             session.disconnect();
         } catch (JSchException | FileNotFoundException | SftpException ex) {
             out_msg = "  ... " + ex.getMessage();
