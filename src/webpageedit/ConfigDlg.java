@@ -21,6 +21,7 @@ import javafx.geometry.Insets;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.layout.GridPane;
@@ -36,21 +37,21 @@ public class ConfigDlg {
     private final ButtonType         btnSave   = new ButtonType("Speichern");
     private final ButtonType         btnCancel = new ButtonType("Abbrechen");
 
-    private final GridPane   grid           = new GridPane();
-    private final Label      lblCharCode    = new Label("Zeichen Codierung:");
-    private final Label      lblDefPath     = new Label("Standard Ordner:");
-    private final Label      lblFtpPort     = new Label("FTP Port:");
-    private final Label      lblFtpProtocol = new Label("FTP Protokoll:");
-    private final Label      lblFtpServer   = new Label("FTP Server:");
-    private final Label      lblFtpUser     = new Label("Benutzername:");
-    private final Label      lblFtpPassword = new Label("Passwort:");
-    private final TextField  txtCharCode    = new TextField();
-    private final TextField  txtDefPath     = new TextField();
-    private final TextField  txtFtpPort     = new TextField();
-    private final TextField  txtFtpProtocol = new TextField();
-    private final TextField  txtFtpServer   = new TextField();
-    private final TextField  txtFtpUser     = new TextField();
-    private final TextField  txtFtpPassword = new TextField();
+    private final GridPane      grid           = new GridPane();
+    private final Label         lblCharCode    = new Label("Zeichen Codierung:");
+    private final Label         lblDefPath     = new Label("Standard Ordner:");
+    private final Label         lblFtpPort     = new Label("FTP Port:");
+    private final Label         lblFtpProtocol = new Label("FTP Protokoll:");
+    private final Label         lblFtpServer   = new Label("FTP Server:");
+    private final Label         lblFtpUser     = new Label("Benutzername:");
+    private final Label         lblFtpPassword = new Label("Passwort:");
+    private final TextField     txtCharCode    = new TextField();
+    private final TextField     txtDefPath     = new TextField();
+    private final TextField     txtFtpPort     = new TextField();
+    private final TextField     txtFtpProtocol = new TextField();
+    private final TextField     txtFtpServer   = new TextField();
+    private final TextField     txtFtpUser     = new TextField();
+    private final PasswordField txtFtpPassword = new PasswordField();
     
     // Variable members
     private String char_code;
