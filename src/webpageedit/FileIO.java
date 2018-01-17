@@ -47,19 +47,7 @@ public class FileIO {
     private final  Config config = new Config();
     private static String error_msg = "";
     
-    // Getters / Setters
-    public static String getDOWN_COMPLETE_MSG() {
-        return DOWN_COMPLETE_MSG;
-    }
-
-    public static String getNO_FILE_ON_SVR() {
-        return NO_FILE_ON_SVR;
-    }
-
-    public static String getUP_COMPLETE_MSG() {
-        return UP_COMPLETE_MSG;
-    }
-    
+    // Getters
     public Config getConfig() {
         return config;
     }
